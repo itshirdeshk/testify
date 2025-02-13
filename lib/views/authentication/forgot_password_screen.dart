@@ -26,10 +26,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
 
     setState(() => _isLoading = true);
-    final AuthService authService = AuthService(context);
+    final AuthService authService = AuthService();
     try {
       final response = await authService.sendResetPasswordEmail(
-        _emailController.text,
+        _emailController.text, context
       );
 
       if (!mounted) return;

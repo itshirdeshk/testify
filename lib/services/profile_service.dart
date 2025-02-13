@@ -6,12 +6,19 @@ import 'package:testify/models/profile_update.dart';
 
 class ProfileService {
   late Dio _dio;
+  bool _isInitialized = false;
 
-  ProfileService(BuildContext context) {
-    CustomDio.create(context).then((dio) => _dio = dio);
+  ProfileService();
+
+  Future<void> init(BuildContext context) async {
+    if (!_isInitialized) {
+      _dio = await CustomDio.create(context);
+      _isInitialized = true;
+    }
   }
 
-  Future<User?> updateProfile(ProfileUpdate data) async {
+  Future<User?> updateProfile(ProfileUpdate data, BuildContext context) async {
+    await init(context);
     try {
       final formData = FormData.fromMap({
         if (data.name != null) 'name': data.name,

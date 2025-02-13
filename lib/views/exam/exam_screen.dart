@@ -20,7 +20,7 @@ class ExamScreen extends StatefulWidget {
 class _ExamScreenState extends State<ExamScreen> {
   late final Future<ExamService> _examServiceFuture;
   late final Future<SubExamService> _subExamServiceFuture;
-  
+
   List<Exam> _allExams = [];
   List<SubExam> _subExams = [];
   bool _isLoading = true;
@@ -85,13 +85,14 @@ class _ExamScreenState extends State<ExamScreen> {
       _isUpdating = true;
     });
 
-    final ProfileService profileService = ProfileService(context);
+    final ProfileService profileService = ProfileService();
 
     final updatedUser = await profileService.updateProfile(
       ProfileUpdate(
         examId: _selectedExamId,
         subExamId: _selectedSubExamId,
       ),
+      context,
     );
 
     if (!mounted) return;

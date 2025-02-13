@@ -18,7 +18,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  
+
   bool _isLoading = false;
   String? _selectedImage;
   final ImagePicker _picker = ImagePicker();
@@ -42,7 +42,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _updateProfile() async {
     setState(() => _isLoading = true);
-    final profileService = ProfileService(context);
+    final profileService = ProfileService();
     try {
       final updatedUser = await profileService.updateProfile(
         ProfileUpdate(
@@ -51,6 +51,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           phone: _phoneController.text,
           profilePicture: _imageFile?.path != null ? _imageFile!.path : null,
         ),
+        context,
       );
 
       if (!mounted) return;

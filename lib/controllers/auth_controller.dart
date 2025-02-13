@@ -20,7 +20,7 @@ class AuthController {
   
 
   Future<bool> login(BuildContext context) async {
-    final AuthService authService = AuthService(context);
+    final AuthService authService = AuthService();
     try {
       final response = await authService.login(
           LoginCredentials(
@@ -45,12 +45,13 @@ class AuthController {
         return false;
       }
     } catch (e) {
+      print(e.toString());
       return false;
     }
   }
 
   Future<bool> register(BuildContext context) async {
-    final AuthService authService = AuthService(context);
+    final AuthService authService = AuthService();
     try {
       final registrationData = RegistrationData(
         name: nameController.text,
@@ -85,11 +86,11 @@ class AuthController {
 
   Future<bool> verifyOtp(
       BuildContext context, String email, bool screen) async {
-        final AuthService authService = AuthService(context);
+        final AuthService authService = AuthService();
     try {
       String otp = otpControllers.map((controller) => controller.text).join();
       final response =
-          await authService.verifyOtp(OtpData(email: email, otp: otp));
+          await authService.verifyOtp(OtpData(email: email, otp: otp), context);
 
       if (response.statusCode == 200 && context.mounted) {
         CustomToast.show(

@@ -35,12 +35,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     }
 
     setState(() => _isLoading = true);
-    final AuthService authService = AuthService(context);
+    final AuthService authService = AuthService();
     try {
       final response = await authService.changePassword(ChangePasswordData(
         oldPassword: _oldPasswordController.text,
         newPassword: _newPasswordController.text,
-      ));
+      ), context);
 
       if (!mounted) return;
 

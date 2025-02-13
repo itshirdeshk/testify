@@ -42,13 +42,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     }
 
     setState(() => _isLoading = true);
-    final AuthService authService = AuthService(context);
+    final AuthService authService = AuthService();
     try {
       final response = await authService.resetPassword(ResetPasswordData(
         otp: _otpController.text,
         password: _passwordController.text,
         confirmPassword: _confirmPasswordController.text,
-      ));
+      ), context);
 
       if (!mounted) return;
 
