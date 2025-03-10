@@ -5,8 +5,80 @@ import 'package:testify/providers/user_provider.dart';
 import 'package:testify/models/user.dart';
 
 // Profile Screen Implementation
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  Future<bool> _onLogout(UserProvider userProvider) async {
+    return await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: Theme.of(context).cardColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Text(
+                'Logout from Testify!',
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Are you sure you want to logout?',
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    _handleLogout(userProvider);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text('Logout'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+  }
+
+  Future<void> _handleLogout(UserProvider userProvider) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+    await userProvider.clearUser();
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, '/login');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,72 +167,6 @@ class ProfileScreen extends StatelessWidget {
   }
 
   // Widget _buildProfileStats() {
-  //   return Padding(
-  //     padding: const EdgeInsets.symmetric(horizontal: 16),
-  //     child: Row(
-  //       children: [
-  //         _buildStatCard(
-  //           'Tests Taken',
-  //           '24',
-  //           Icons.assignment_turned_in,
-  //           Colors.blue,
-  //         ),
-  //         const SizedBox(width: 12),
-  //         _buildStatCard(
-  //           'Avg Score',
-  //           '76%',
-  //           Icons.trending_up,
-  //           Colors.green,
-  //         ),
-  //         const SizedBox(width: 12),
-  //         _buildStatCard(
-  //           'Rank',
-  //           '#123',
-  //           Icons.emoji_events,
-  //           Colors.orange,
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  // Widget _buildStatCard(
-  //     String label, String value, IconData icon, Color color) {
-  //   return Builder(
-  //     builder: (context) => Expanded(
-  //       child: Container(
-  //         padding: const EdgeInsets.all(16),
-  //         decoration: BoxDecoration(
-  //           color: Theme.of(context).cardColor.withOpacity(0.3),
-  //           borderRadius: BorderRadius.circular(16),
-  //           border: Border.all(color: color.withOpacity(0.2)),
-  //         ),
-  //         child: Column(
-  //           children: [
-  //             Icon(icon, color: color, size: 24),
-  //             const SizedBox(height: 8),
-  //             Text(
-  //               value,
-  //               style: TextStyle(
-  //                 fontSize: 20,
-  //                 fontWeight: FontWeight.bold,
-  //                 color: color,
-  //               ),
-  //             ),
-  //             Text(
-  //               label,
-  //               style: TextStyle(
-  //                 fontSize: 12,
-  //                 color: Theme.of(context).textTheme.bodyMedium?.color,
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
   Widget _buildUserInfo(BuildContext context, User user) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -278,13 +284,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           OutlinedButton.icon(
-            onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.remove('token');
-              await userProvider.clearUser();
-              if (!context.mounted) return;
-              Navigator.pushReplacementNamed(context, '/login');
-            },
+            onPressed: () => _onLogout(userProvider),
             icon: const Icon(Icons.logout),
             label: const Text('Logout'),
             style: OutlinedButton.styleFrom(

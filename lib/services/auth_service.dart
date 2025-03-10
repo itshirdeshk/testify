@@ -99,6 +99,10 @@ class AuthService {
     return _makePostRequest('/user/send-reset-password-email', {'email': email}, context);
   }
 
+  Future<Response> sendOtpAgain(String email, BuildContext context) async {
+    return _makePostRequest('/user/send-otp-again', {'email': email}, context);
+  }
+
   Future<Response> resetPassword(ResetPasswordData resetData, BuildContext context) async {
     return _makePostRequest('/user/reset-password', resetData.toJson(), context);
   }

@@ -4,8 +4,80 @@ import 'package:provider/provider.dart';
 import 'package:testify/providers/theme_provider.dart';
 import 'package:testify/providers/user_provider.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  Future<bool> _onLogout(UserProvider userProvider) async {
+    return await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: Theme.of(context).cardColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Text(
+                'Logout from Testify!',
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Are you sure you want to logout?',
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    _handleLogout(userProvider);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text('Logout'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+  }
+
+  Future<void> _handleLogout(UserProvider userProvider) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+    await userProvider.clearUser();
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, '/login');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -261,19 +333,11 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildLogoutButton(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     return Padding(
       padding: const EdgeInsets.all(20),
       child: ElevatedButton.icon(
-        onPressed: () async {
-          final prefs = await SharedPreferences.getInstance();
-          if (!context.mounted) return;
-          final userProvider =
-              Provider.of<UserProvider>(context, listen: false);
-          await prefs.remove('token');
-          await userProvider.clearUser();
-          if (!context.mounted) return;
-          Navigator.pushReplacementNamed(context, '/login');
-        },
+        onPressed: () => _onLogout(userProvider),
         icon: const Icon(Icons.logout),
         label: const Text('Logout'),
         style: ElevatedButton.styleFrom(

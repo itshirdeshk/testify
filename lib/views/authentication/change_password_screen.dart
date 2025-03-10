@@ -13,43 +13,34 @@ class ChangePasswordScreen extends StatefulWidget {
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final TextEditingController _oldPasswordController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
+  final GlobalKey<FormState> _formKey =
+      GlobalKey<FormState>(); // Form key for validation
   bool _isLoading = false;
+  bool _obscureOldPassword = true;
+  bool _obscureNewPassword = true;
 
   Future<void> _handleChangePassword() async {
-    if (_oldPasswordController.text.isEmpty) {
-      CustomToast.show(
-        context: context,
-        message: 'Please enter your old password',
-        isError: true,
-      );
-      return;
-    }
-
-    if (_newPasswordController.text.isEmpty) {
-      CustomToast.show(
-        context: context,
-        message: 'Please enter your new password',
-        isError: true,
-      );
+    if (!_formKey.currentState!.validate()) {
+      // If validation fails, return
       return;
     }
 
     setState(() => _isLoading = true);
     final AuthService authService = AuthService();
     try {
-      final response = await authService.changePassword(ChangePasswordData(
-        oldPassword: _oldPasswordController.text,
-        newPassword: _newPasswordController.text,
-      ), context);
+      final response = await authService.changePassword(
+          ChangePasswordData(
+            oldPassword: _oldPasswordController.text,
+            newPassword: _newPasswordController.text,
+          ),
+          context);
 
       if (!mounted) return;
 
       if (response.statusCode == 200) {
         CustomToast.show(
             context: context, message: 'Password Changed Successfully');
-        Navigator.pop(
-          context,
-        );
+        Navigator.pop(context);
       } else {
         CustomToast.show(
           context: context,
@@ -76,25 +67,61 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.arrow_back,
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
+            child: Form(
+              key: _formKey, // Assign the form key
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                const SizedBox(height: 40),
-                _buildHeader(),
-                const SizedBox(height: 40),
-                _buildField('Old Password', _oldPasswordController),
-                const SizedBox(height: 24),
-                _buildField('New Password', _newPasswordController),
-                const SizedBox(height: 24),
-                _buildSendButton(),
-              ],
+                  const SizedBox(height: 40),
+                  _buildHeader(),
+                  const SizedBox(height: 40),
+                  _buildField(
+                    'Old Password',
+                    _oldPasswordController,
+                    obscureText: _obscureOldPassword,
+                    onToggleVisibility: () {
+                      setState(
+                          () => _obscureOldPassword = !_obscureOldPassword);
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your old password';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  _buildField(
+                    'New Password',
+                    _newPasswordController,
+                    obscureText: _obscureNewPassword,
+                    onToggleVisibility: () {
+                      setState(
+                          () => _obscureNewPassword = !_obscureNewPassword);
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your new password';
+                      }
+                      if (!RegExp(
+                              r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$')
+                          .hasMatch(value)) {
+                        return 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  _buildSendButton(),
+                ],
+              ),
             ),
           ),
         ),
@@ -139,28 +166,72 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     );
   }
 
-  Widget _buildField(String title, TextEditingController controller) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).dividerColor),
-      ),
-      child: TextField(
-        controller: controller,
-        keyboardType: TextInputType.visiblePassword,
-        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-        decoration: InputDecoration(
-          labelText: title,
-          labelStyle: TextStyle(
-            color: Theme.of(context).textTheme.bodyMedium?.color,
+  Widget _buildField(
+    String title,
+    TextEditingController controller, {
+    bool obscureText = true,
+    VoidCallback? onToggleVisibility,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Theme.of(context).dividerColor),
           ),
-          prefixIcon:
-              Icon(Icons.email_outlined, color: Theme.of(context).primaryColor),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(16),
+          child: TextFormField(
+            controller: controller,
+            obscureText: obscureText,
+            keyboardType: TextInputType.visiblePassword,
+            style:
+                TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+            decoration: InputDecoration(
+              labelText: title,
+              labelStyle: TextStyle(
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              ),
+              prefixIcon: Icon(
+                Icons.lock_outline,
+                color: Theme.of(context).primaryColor,
+              ),
+              suffixIcon: onToggleVisibility != null
+                  ? IconButton(
+                      icon: Icon(
+                        obscureText ? Icons.visibility_off : Icons.visibility,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      onPressed: onToggleVisibility,
+                    )
+                  : null,
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.all(16),
+            ),
+            validator: validator,
+          ),
         ),
-      ),
+        if (validator != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Builder(
+              builder: (context) {
+                final error = validator(controller.text);
+                if (error != null) {
+                  return Text(
+                    error,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontSize: 12,
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+      ],
     );
   }
 

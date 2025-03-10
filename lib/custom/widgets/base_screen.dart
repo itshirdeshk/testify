@@ -198,7 +198,7 @@ class _BaseScreenState extends State<BaseScreen> {
             _buildDrawerItem(
               icon: Icons.exit_to_app,
               title: 'Logout',
-              onTap: () => _handleLogout(userProvider),
+              onTap: () => _onLogout(userProvider),
               color: Colors.red,
             ),
           ],
@@ -354,6 +354,65 @@ class _BaseScreenState extends State<BaseScreen> {
   void _navigateAndCloseDrawer(int index) {
     Navigator.pop(context);
     _onBottomNavItemTapped(index);
+  }
+
+  Future<bool> _onLogout(UserProvider userProvider) async {
+    return await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: Theme.of(context).cardColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Text(
+                'Logout from Testify!',
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Are you sure you want to logout?',
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    _handleLogout(userProvider);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text('Logout'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
   }
 
   Future<void> _handleLogout(UserProvider userProvider) async {

@@ -15,40 +15,28 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
-
+  final GlobalKey<FormState> _formKey =
+      GlobalKey<FormState>(); // Form key for validation
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
   Future<void> _handleResetPassword() async {
-    if (_otpController.text.isEmpty ||
-        _passwordController.text.isEmpty ||
-        _confirmPasswordController.text.isEmpty) {
-      CustomToast.show(
-        context: context,
-        message: 'Please fill all fields',
-        isError: true,
-      );
-      return;
-    }
-
-    if (_passwordController.text != _confirmPasswordController.text) {
-      CustomToast.show(
-        context: context,
-        message: 'Passwords do not match',
-        isError: true,
-      );
+    if (!_formKey.currentState!.validate()) {
+      // If validation fails, return
       return;
     }
 
     setState(() => _isLoading = true);
     final AuthService authService = AuthService();
     try {
-      final response = await authService.resetPassword(ResetPasswordData(
-        otp: _otpController.text,
-        password: _passwordController.text,
-        confirmPassword: _confirmPasswordController.text,
-      ), context);
+      final response = await authService.resetPassword(
+          ResetPasswordData(
+            otp: _otpController.text,
+            password: _passwordController.text,
+            confirmPassword: _confirmPasswordController.text,
+          ),
+          context);
 
       if (!mounted) return;
 
@@ -88,23 +76,26 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.arrow_back,
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
+            child: Form(
+              key: _formKey, // Assign the form key
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                const SizedBox(height: 40),
-                _buildHeader(),
-                const SizedBox(height: 40),
-                _buildResetForm(),
-                const SizedBox(height: 24),
-                _buildResetButton(),
-              ],
+                  const SizedBox(height: 40),
+                  _buildHeader(),
+                  const SizedBox(height: 40),
+                  _buildResetForm(),
+                  const SizedBox(height: 24),
+                  _buildResetButton(),
+                ],
+              ),
             ),
           ),
         ),
@@ -157,6 +148,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           label: 'OTP',
           icon: Icons.pin_outlined,
           keyboardType: TextInputType.number,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter the OTP';
+            }
+            if (!RegExp(r'^\d{6}$').hasMatch(value)) {
+              return 'OTP must be 6 digits';
+            }
+            return null;
+          },
         ),
         const SizedBox(height: 16),
         _buildInputField(
@@ -167,6 +167,17 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           obscureText: _obscurePassword,
           onToggleVisibility: () =>
               setState(() => _obscurePassword = !_obscurePassword),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter your new password';
+            }
+            if (!RegExp(
+                    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$')
+                .hasMatch(value)) {
+              return 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character';
+            }
+            return null;
+          },
         ),
         const SizedBox(height: 16),
         _buildInputField(
@@ -177,6 +188,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           obscureText: _obscureConfirmPassword,
           onToggleVisibility: () => setState(
               () => _obscureConfirmPassword = !_obscureConfirmPassword),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please confirm your password';
+            }
+            if (value != _passwordController.text) {
+              return 'Passwords do not match';
+            }
+            return null;
+          },
         ),
       ],
     );
@@ -190,36 +210,64 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     bool isPassword = false,
     bool? obscureText,
     VoidCallback? onToggleVisibility,
+    String? Function(String?)? validator,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).dividerColor),
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: isPassword ? (obscureText ?? true) : false,
-        keyboardType: keyboardType,
-        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle:
-              TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
-          prefixIcon: Icon(icon, color: Theme.of(context).primaryColor),
-          suffixIcon: isPassword
-              ? IconButton(
-                  icon: Icon(
-                    obscureText! ? Icons.visibility_off : Icons.visibility,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                  onPressed: onToggleVisibility,
-                )
-              : null,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(16),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Theme.of(context).dividerColor),
+          ),
+          child: TextFormField(
+            controller: controller,
+            obscureText: isPassword ? (obscureText ?? true) : false,
+            keyboardType: keyboardType,
+            style:
+                TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+            decoration: InputDecoration(
+              labelText: label,
+              labelStyle: TextStyle(
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              ),
+              prefixIcon: Icon(icon, color: Theme.of(context).primaryColor),
+              suffixIcon: isPassword
+                  ? IconButton(
+                      icon: Icon(
+                        obscureText! ? Icons.visibility_off : Icons.visibility,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      onPressed: onToggleVisibility,
+                    )
+                  : null,
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.all(16),
+            ),
+            validator: validator,
+          ),
         ),
-      ),
+        if (validator != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Builder(
+              builder: (context) {
+                final error = validator(controller.text);
+                if (error != null) {
+                  return Text(
+                    error,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontSize: 12,
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+      ],
     );
   }
 

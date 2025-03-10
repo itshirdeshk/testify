@@ -12,16 +12,13 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
-  
+  final GlobalKey<FormState> _formKey =
+      GlobalKey<FormState>(); // Form key for validation
   bool _isLoading = false;
 
   Future<void> _handleSendEmail() async {
-    if (_emailController.text.isEmpty) {
-      CustomToast.show(
-        context: context,
-        message: 'Please enter your email',
-        isError: true,
-      );
+    if (!_formKey.currentState!.validate()) {
+      // If validation fails, return
       return;
     }
 
@@ -29,7 +26,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final AuthService authService = AuthService();
     try {
       final response = await authService.sendResetPasswordEmail(
-        _emailController.text, context
+        _emailController.text,
+        context,
       );
 
       if (!mounted) return;
@@ -67,23 +65,26 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.arrow_back,
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
+            child: Form(
+              key: _formKey, // Assign the form key
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                const SizedBox(height: 40),
-                _buildHeader(),
-                const SizedBox(height: 40),
-                _buildEmailField(),
-                const SizedBox(height: 24),
-                _buildSendButton(),
-              ],
+                  const SizedBox(height: 40),
+                  _buildHeader(),
+                  const SizedBox(height: 40),
+                  _buildEmailField(),
+                  const SizedBox(height: 24),
+                  _buildSendButton(),
+                ],
+              ),
             ),
           ),
         ),
@@ -129,27 +130,65 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Widget _buildEmailField() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).dividerColor),
-      ),
-      child: TextField(
-        controller: _emailController,
-        keyboardType: TextInputType.emailAddress,
-        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-        decoration: InputDecoration(
-          labelText: 'Email',
-          labelStyle: TextStyle(
-            color: Theme.of(context).textTheme.bodyMedium?.color,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Theme.of(context).dividerColor),
           ),
-          prefixIcon:
-              Icon(Icons.email_outlined, color: Theme.of(context).primaryColor),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(16),
+          child: TextFormField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            style:
+                TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+            decoration: InputDecoration(
+              labelText: 'Email',
+              labelStyle: TextStyle(
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              ),
+              prefixIcon: Icon(
+                Icons.email_outlined,
+                color: Theme.of(context).primaryColor,
+              ),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.all(16),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your email';
+              }
+              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                  .hasMatch(value)) {
+                return 'Please enter a valid email address';
+              }
+              return null;
+            },
+          ),
         ),
-      ),
+        Padding(
+          padding: const EdgeInsets.only(top: 4.0),
+          child: Builder(
+            builder: (context) {
+              final error = _formKey.currentState?.validate() == false
+                  ? 'Please enter a valid email address'
+                  : null;
+              if (error != null) {
+                return Text(
+                  error,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                    fontSize: 12,
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      ],
     );
   }
 

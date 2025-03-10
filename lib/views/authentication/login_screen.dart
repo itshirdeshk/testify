@@ -10,36 +10,85 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final AuthController _authController = AuthController();
+  final _formKey = GlobalKey<FormState>(); // Key for form validation
+  final FocusNode _emailFocusNode = FocusNode();
+  final FocusNode _phoneFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _isAnyFieldFocused = false; // Track if any field is focused
+
+  @override
+  void initState() {
+    super.initState();
+    // Add listeners to focus nodes
+    _emailFocusNode.addListener(_onFocusChange);
+    _phoneFocusNode.addListener(_onFocusChange);
+    _passwordFocusNode.addListener(_onFocusChange);
+  }
+
+  @override
+  void dispose() {
+    // Clean up focus nodes
+    _emailFocusNode.removeListener(_onFocusChange);
+    _phoneFocusNode.removeListener(_onFocusChange);
+    _passwordFocusNode.removeListener(_onFocusChange);
+    _emailFocusNode.dispose();
+    _phoneFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _onFocusChange() {
+    setState(() {
+      _isAnyFieldFocused = _emailFocusNode.hasFocus ||
+          _phoneFocusNode.hasFocus ||
+          _passwordFocusNode.hasFocus;
+    });
+  }
 
   Future<void> _handleLogin() async {
-    setState(() => _isLoading = true);
-    try {
-      await _authController.login(context);
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+      try {
+        await _authController.login(context);
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
     }
+  }
+
+  void _unfocusAllFields() {
+    // Unfocus all fields
+    _emailFocusNode.unfocus();
+    _phoneFocusNode.unfocus();
+    _passwordFocusNode.unfocus();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 40),
-                _buildHeader(),
-                const SizedBox(height: 40),
-                _buildLoginForm(),
-                const SizedBox(height: 24),
-                _buildActionButtons(context),
-              ],
+    return GestureDetector(
+      onTap: _unfocusAllFields, // Unfocus fields when tapping outside
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Form(
+                key: _formKey, // Assign the form key
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 40),
+                    _buildHeader(),
+                    const SizedBox(height: 40),
+                    _buildLoginForm(),
+                    const SizedBox(height: 24),
+                    _buildActionButtons(context),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -92,6 +141,16 @@ class _LoginScreenState extends State<LoginScreen> {
           label: 'Email',
           icon: Icons.email_outlined,
           keyboardType: TextInputType.emailAddress,
+          focusNode: _emailFocusNode,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter your email';
+            }
+            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+              return 'Please enter a valid email address';
+            }
+            return null;
+          },
         ),
         const SizedBox(height: 16),
         _buildInputField(
@@ -99,6 +158,16 @@ class _LoginScreenState extends State<LoginScreen> {
           label: 'Phone',
           icon: Icons.phone_outlined,
           keyboardType: TextInputType.phone,
+          focusNode: _phoneFocusNode,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter your phone number';
+            }
+            if (!RegExp(r'^\d{10}$').hasMatch(value)) {
+              return 'Phone number must be 10 digits';
+            }
+            return null;
+          },
         ),
         const SizedBox(height: 16),
         _buildInputField(
@@ -107,8 +176,20 @@ class _LoginScreenState extends State<LoginScreen> {
           icon: Icons.lock_outline,
           isPassword: true,
           obscureText: _obscurePassword,
+          focusNode: _passwordFocusNode,
           onToggleVisibility: () {
             setState(() => _obscurePassword = !_obscurePassword);
+          },
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter your password';
+            }
+            if (!RegExp(
+                    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$')
+                .hasMatch(value)) {
+              return 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character';
+            }
+            return null;
           },
         ),
         const SizedBox(height: 12),
@@ -139,36 +220,66 @@ class _LoginScreenState extends State<LoginScreen> {
     bool isPassword = false,
     bool? obscureText,
     VoidCallback? onToggleVisibility,
+    String? Function(String?)? validator,
+    FocusNode? focusNode,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).dividerColor),
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: isPassword ? (obscureText ?? true) : false,
-        keyboardType: keyboardType,
-        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle:
-              TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
-          prefixIcon: Icon(icon, color: Theme.of(context).primaryColor),
-          suffixIcon: isPassword
-              ? IconButton(
-                  icon: Icon(
-                    obscureText! ? Icons.visibility_off : Icons.visibility,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                  onPressed: onToggleVisibility,
-                )
-              : null,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(16),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Theme.of(context).dividerColor),
+          ),
+          child: TextFormField(
+            controller: controller,
+            obscureText: isPassword ? (obscureText ?? true) : false,
+            keyboardType: keyboardType,
+            focusNode: focusNode,
+            style:
+                TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+            decoration: InputDecoration(
+              labelText: label,
+              labelStyle: TextStyle(
+                  color: Theme.of(context).textTheme.bodyMedium?.color),
+              prefixIcon: Icon(icon, color: Theme.of(context).primaryColor),
+              suffixIcon: isPassword
+                  ? IconButton(
+                      icon: Icon(
+                        obscureText! ? Icons.visibility_off : Icons.visibility,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      onPressed: onToggleVisibility,
+                    )
+                  : null,
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.all(16),
+            ),
+            validator: validator,
+          ),
         ),
-      ),
+        // Add space for error text
+        if (validator != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Builder(
+              builder: (context) {
+                final error = validator(controller.text);
+                if (error != null) {
+                  return Text(
+                    error,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontSize: 12,
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+      ],
     );
   }
 
@@ -178,7 +289,9 @@ class _LoginScreenState extends State<LoginScreen> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: _isLoading ? null : _handleLogin,
+            onPressed: _isAnyFieldFocused || _isLoading
+                ? null
+                : _handleLogin, // Disable button if any field is focused or loading
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
               padding: const EdgeInsets.symmetric(vertical: 16),

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:testify/controllers/auth_controller.dart';
+import 'package:testify/services/auth_service.dart';
+import 'package:testify/widgets/custom_toast.dart';
 
 class OtpScreen extends StatefulWidget {
   final String email;
@@ -14,6 +16,7 @@ class OtpScreen extends StatefulWidget {
 
 class _OtpScreenState extends State<OtpScreen> {
   final AuthController _authController = AuthController();
+  final _formKey = GlobalKey<FormState>(); // Key for form validation
   bool _isLoading = false;
   int _resendTimer = 30;
   Timer? _timer;
@@ -41,9 +44,42 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   Future<void> _handleVerifyOtp() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+      try {
+        await _authController.verifyOtp(context, widget.email, widget.screen);
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _handleResetPassword() async {
     setState(() => _isLoading = true);
+    final AuthService authService = AuthService();
     try {
-      await _authController.verifyOtp(context, widget.email, widget.screen);
+      final response = await authService.sendOtpAgain(widget.email, context);
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        CustomToast.show(
+          context: context,
+          message: 'OTP send successfully',
+        );
+      } else {
+        CustomToast.show(
+          context: context,
+          message: response.data['message'],
+          isError: true,
+        );
+      }
+    } catch (e) {
+      CustomToast.show(
+        context: context,
+        message: 'An error occurred',
+        isError: true,
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -57,16 +93,19 @@ class _OtpScreenState extends State<OtpScreen> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 40),
-                _buildHeader(),
-                const SizedBox(height: 40),
-                _buildOtpFields(),
-                const SizedBox(height: 24),
-                _buildActionButtons(),
-              ],
+            child: Form(
+              key: _formKey, // Assign the form key
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 40),
+                  _buildHeader(),
+                  const SizedBox(height: 40),
+                  _buildOtpFields(),
+                  const SizedBox(height: 24),
+                  _buildActionButtons(),
+                ],
+              ),
             ),
           ),
         ),
@@ -118,33 +157,34 @@ class _OtpScreenState extends State<OtpScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: List.generate(6, (index) => _buildOtpDigitField(index)),
         ),
-        // const SizedBox(height: 16),
-        // Text(
-        //   'Didn\'t receive the code?',
-        //   style: TextStyle(
-        //     color: Theme.of(context).textTheme.bodyMedium?.color,
-        //   ),
-        // ),
-        // TextButton(
-        //   onPressed: _resendTimer == 0
-        //       ? () {
-        //           setState(() => _resendTimer = 30);
-        //           _startResendTimer();
-        //           // Implement resend OTP logic
-        //         }
-        //       : null,
-        //   child: Text(
-        //     _resendTimer > 0
-        //         ? 'Resend OTP in $_resendTimer seconds'
-        //         : 'Resend OTP',
-        //     style: TextStyle(
-        //       color: _resendTimer == 0
-        //           ? Theme.of(context).primaryColor
-        //           : Theme.of(context).textTheme.bodyMedium?.color,
-        //       fontWeight: FontWeight.bold,
-        //     ),
-        //   ),
-        // ),
+        const SizedBox(height: 16),
+        Text(
+          'Didn\'t receive the code?',
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyMedium?.color,
+          ),
+        ),
+        TextButton(
+          onPressed: _resendTimer == 0
+              ? () async {
+                  setState(() => _resendTimer = 30);
+                  _startResendTimer();
+                  // Implement resend OTP logic
+                  await _handleResetPassword();
+                }
+              : null,
+          child: Text(
+            _resendTimer > 0
+                ? 'Resend OTP in $_resendTimer seconds'
+                : 'Resend OTP',
+            style: TextStyle(
+              color: _resendTimer == 0
+                  ? Theme.of(context).primaryColor
+                  : Theme.of(context).textTheme.bodyMedium?.color,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -162,7 +202,7 @@ class _OtpScreenState extends State<OtpScreen> {
               : Theme.of(context).dividerColor,
         ),
       ),
-      child: TextField(
+      child: TextFormField(
         controller: _authController.otpControllers[index],
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,
@@ -176,16 +216,27 @@ class _OtpScreenState extends State<OtpScreen> {
           counterText: '',
           border: InputBorder.none,
         ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return '';
+          }
+          return null;
+        },
         onChanged: (value) {
           if (value.length == 1) {
             if (index < 5) {
-              FocusScope.of(context).nextFocus();
+              FocusScope.of(context).nextFocus(); // Move to the next field
             } else {
-              _handleVerifyOtp();
+              _handleVerifyOtp(); // Submit OTP if the last field is filled
             }
           } else if (value.isEmpty && index > 0) {
-            FocusScope.of(context).previousFocus();
+            FocusScope.of(context)
+                .previousFocus(); // Move to the previous field
           }
+        },
+        onTap: () {
+          // Clear the field when tapped (optional)
+          _authController.otpControllers[index].clear();
         },
       ),
     );

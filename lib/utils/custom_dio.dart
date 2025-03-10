@@ -37,10 +37,15 @@ class CustomDio {
       },
       onError: (DioException e, handler) {
         // Handle errors
-        if(e.response?.statusCode == 401) {
+        if (e.response?.statusCode == 401) {
+          print(e.response.toString());
           // Handle unauthorized error
-          Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
-          CustomToast.show(context: context, message: 'Token Expired, Login Again.', isError: true);
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil('/login', (route) => false);
+          CustomToast.show(
+              context: context,
+              message: 'Token Expired, Login Again.',
+              isError: true);
           return handler.next(e);
         }
         if (kDebugMode) {
