@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  Future<void> _handleLogin() async {
+ Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
@@ -217,13 +217,11 @@ class _LoginScreenState extends State<LoginScreen> {
     required String label,
     required IconData icon,
     TextInputType? keyboardType,
-    bool isPassword = false,
-    bool? obscureText,
+ bool isPassword = false, bool? obscureText,
     VoidCallback? onToggleVisibility,
     String? Function(String?)? validator,
     FocusNode? focusNode,
-  }) {
-    return Column(
+  }) {    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
@@ -235,11 +233,11 @@ class _LoginScreenState extends State<LoginScreen> {
           child: TextFormField(
             controller: controller,
             obscureText: isPassword ? (obscureText ?? true) : false,
-            keyboardType: keyboardType,
+ keyboardType: keyboardType,
             focusNode: focusNode,
             style:
                 TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-            decoration: InputDecoration(
+ decoration: InputDecoration(
               labelText: label,
               labelStyle: TextStyle(
                   color: Theme.of(context).textTheme.bodyMedium?.color),
@@ -255,30 +253,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   : null,
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(16),
+ errorText: validator?.call(controller.text),
             ),
             validator: validator,
           ),
-        ),
-        // Add space for error text
-        if (validator != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Builder(
-              builder: (context) {
-                final error = validator(controller.text);
-                if (error != null) {
-                  return Text(
-                    error,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                      fontSize: 12,
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-          ),
+        ) 
       ],
     );
   }
@@ -289,8 +268,7 @@ class _LoginScreenState extends State<LoginScreen> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: _isAnyFieldFocused || _isLoading
-                ? null
+            onPressed: _isLoading ? null
                 : _handleLogin, // Disable button if any field is focused or loading
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,

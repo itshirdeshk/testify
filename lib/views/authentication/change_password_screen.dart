@@ -211,26 +211,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             ),
             validator: validator,
           ),
-        ),
-        if (validator != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Builder(
-              builder: (context) {
-                final error = validator(controller.text);
-                if (error != null) {
-                  return Text(
-                    error,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                      fontSize: 12,
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-          ),
+        ), // Removed extra Padding and SizedBox for error text
       ],
     );
   }

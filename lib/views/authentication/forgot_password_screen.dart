@@ -167,27 +167,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               return null;
             },
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 4.0),
-          child: Builder(
-            builder: (context) {
-              final error = _formKey.currentState?.validate() == false
-                  ? 'Please enter a valid email address'
-                  : null;
-              if (error != null) {
-                return Text(
-                  error,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
-                    fontSize: 12,
-                  ),
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-        ),
+        ),        
       ],
     );
   }

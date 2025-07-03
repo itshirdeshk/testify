@@ -6,7 +6,7 @@ import 'package:testify/services/test_series_service.dart';
 class TestProvider with ChangeNotifier {
   List<TestSeries> _testSeries = [];
   List<banner_model.Banner> _banners = [];
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   List<TestSeries> get testSeries => _testSeries;
   List<banner_model.Banner> get banners => _banners;

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class RankingScreen extends StatefulWidget {
 
-  RankingScreen({super.key});
+  const RankingScreen({super.key});
 
   @override
   State<RankingScreen> createState() => _RankingScreenState();

@@ -16,9 +16,6 @@ class _SignupScreenState extends State<SignupScreen> {
   final FocusNode _phoneFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _confirmPasswordFocusNode = FocusNode();
-  bool _isLoading = false;
-  bool _obscurePassword1 = true;
-  bool _obscurePassword2 = true;
   bool _isAnyFieldFocused = false; // Track if any field is focused
 
   @override
@@ -47,6 +44,10 @@ class _SignupScreenState extends State<SignupScreen> {
     _confirmPasswordFocusNode.dispose();
     super.dispose();
   }
+
+  bool _isLoading = false;
+  bool _obscurePassword1 = true;
+  bool _obscurePassword2 = true;
 
   void _onFocusChange() {
     setState(() {
@@ -289,29 +290,7 @@ class _SignupScreenState extends State<SignupScreen> {
             ),
             validator: validator,
           ),
-        ),
-        // Add space for error text
-        if (validator != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Builder(
-              builder: (context) {
-                final error = validator(controller.text);
-                if (error != null) {
-                  return Text(
-                    error,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                      fontSize: 12,
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-          ),
-      ],
-    );
+        )],);
   }
 
   Widget _buildActionButtons(BuildContext context) {
@@ -320,9 +299,7 @@ class _SignupScreenState extends State<SignupScreen> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: _isAnyFieldFocused || _isLoading
-                ? null
-                : _handleSignup, // Disable button if any field is focused or loading
+            onPressed: _isLoading ? null : _handleSignup,
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
               padding: const EdgeInsets.symmetric(vertical: 16),
