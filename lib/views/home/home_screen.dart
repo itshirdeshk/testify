@@ -156,7 +156,7 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       .textTheme
                       .bodyMedium
                       ?.color
-                      ?.withOpacity(0.7),
+                      ?.withValues(alpha: 0.7),
                 ),
               ),
             )
@@ -177,7 +177,7 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             ),
@@ -301,7 +301,7 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   .textTheme
                   .bodyMedium
                   ?.color!
-                  .withOpacity(0.7),
+                  .withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -349,9 +349,9 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   //     child: Container(
   //       padding: const EdgeInsets.all(12),
   //       decoration: BoxDecoration(
-  //         color: color.withOpacity(0.1),
+  //         color: color.withValues(alpha:0.1),
   //         borderRadius: BorderRadius.circular(12),
-  //         border: Border.all(color: color.withOpacity(0.2)),
+  //         border: Border.all(color: color.withValues(alpha:0.2)),
   //       ),
   //       child: Column(
   //         children: [
@@ -370,7 +370,7 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   //             title,
   //             style: TextStyle(
   //               fontSize: 12,
-  //               color: color.withOpacity(0.8),
+  //               color: color.withValues(alpha:0.8),
   //             ),
   //             textAlign: TextAlign.center,
   //           ),
@@ -406,7 +406,7 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   //                     gradient: LinearGradient(
   //                       colors: [
   //                         Theme.of(context).primaryColor,
-  //                         Theme.of(context).primaryColor.withOpacity(0.8),
+  //                         Theme.of(context).primaryColor.withValues(alpha:0.8),
   //                       ],
   //                     ),
   //                   ),
@@ -420,7 +420,7 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   //                             Container(
   //                               padding: const EdgeInsets.all(8),
   //                               decoration: BoxDecoration(
-  //                                 color: Colors.white.withOpacity(0.2),
+  //                                 color: Colors.white.withValues(alpha:0.2),
   //                                 borderRadius: BorderRadius.circular(8),
   //                               ),
   //                               child: const Icon(
@@ -533,7 +533,7 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     .textTheme
                                     .bodyMedium
                                     ?.color
-                                    ?.withOpacity(0.7),
+                                    ?.withValues(alpha: 0.7),
                               ),
                             ),
                           )
@@ -559,7 +559,7 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           decoration: BoxDecoration(
                                             color: Theme.of(context)
                                                 .primaryColor
-                                                .withOpacity(0.1),
+                                                .withValues(alpha: 0.1),
                                             borderRadius:
                                                 BorderRadius.circular(20),
                                           ),
@@ -589,8 +589,8 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
-                                            color:
-                                                Colors.green.withOpacity(0.1),
+                                            color: Colors.green
+                                                .withValues(alpha: 0.1),
                                             borderRadius:
                                                 BorderRadius.circular(20),
                                           ),

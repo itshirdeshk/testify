@@ -38,7 +38,6 @@ class CustomDio {
       onError: (DioException e, handler) {
         // Handle errors
         if (e.response?.statusCode == 401) {
-          print(e.response.toString());
           // Handle unauthorized error
           Navigator.of(context)
               .pushNamedAndRemoveUntil('/login', (route) => false);

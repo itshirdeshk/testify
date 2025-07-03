@@ -184,10 +184,10 @@ class QuizScreenState extends State<QuizScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
+                      color: Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Colors.orange.withOpacity(0.3),
+                        color: Colors.orange.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Row(
@@ -290,10 +290,10 @@ class QuizScreenState extends State<QuizScreen> {
       padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.05),
+        color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
@@ -316,7 +316,7 @@ class QuizScreenState extends State<QuizScreen> {
           //         .textTheme
           //         .bodyMedium
           //         ?.color!
-          //         .withOpacity(0.7),
+          //         .withValues(alpha:0.7),
           //   ),
           // ),
           const SizedBox(height: 16),
@@ -343,9 +343,9 @@ class QuizScreenState extends State<QuizScreen> {
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.blue.withOpacity(0.1),
+          color: Colors.blue.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.blue.withOpacity(0.2)),
+          border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
         ),
         child: Column(
           children: [
@@ -363,7 +363,7 @@ class QuizScreenState extends State<QuizScreen> {
               'Questions',
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.blue.withOpacity(0.8),
+                color: Colors.blue.withValues(alpha: 0.8),
               ),
             ),
           ],
@@ -382,13 +382,13 @@ class QuizScreenState extends State<QuizScreen> {
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: isLowTime
-              ? Colors.red.withOpacity(0.1)
-              : Colors.orange.withOpacity(0.1),
+              ? Colors.red.withValues(alpha: 0.1)
+              : Colors.orange.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isLowTime
-                ? Colors.red.withOpacity(0.2)
-                : Colors.orange.withOpacity(0.2),
+                ? Colors.red.withValues(alpha: 0.2)
+                : Colors.orange.withValues(alpha: 0.2),
           ),
         ),
         child: Column(
@@ -411,8 +411,8 @@ class QuizScreenState extends State<QuizScreen> {
               'Remaining',
               style: TextStyle(
                 fontSize: 12,
-                color:
-                    (isLowTime ? Colors.red : Colors.orange).withOpacity(0.8),
+                color: (isLowTime ? Colors.red : Colors.orange)
+                    .withValues(alpha: 0.8),
               ),
             ),
           ],
@@ -431,9 +431,9 @@ class QuizScreenState extends State<QuizScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: Colors.green.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.green.withOpacity(0.2)),
+                border: Border.all(color: Colors.green.withValues(alpha: 0.2)),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -462,9 +462,9 @@ class QuizScreenState extends State<QuizScreen> {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
+                color: Colors.red.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.red.withOpacity(0.2)),
+                border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -505,11 +505,11 @@ class QuizScreenState extends State<QuizScreen> {
               color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -551,12 +551,12 @@ class QuizScreenState extends State<QuizScreen> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: isSelected
-                ? Theme.of(context).primaryColor.withOpacity(0.1)
+                ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
                 : Theme.of(context).cardColor,
             border: Border.all(
               color: isSelected
                   ? Theme.of(context).primaryColor
-                  : Colors.grey.withOpacity(0.3),
+                  : Colors.grey.withValues(alpha: 0.3),
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(12),
@@ -607,7 +607,7 @@ class QuizScreenState extends State<QuizScreen> {
         color: Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -747,10 +747,10 @@ class QuizScreenState extends State<QuizScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: color.withOpacity(0.2),
+          color: color.withValues(alpha: 0.2),
         ),
       ),
       child: Row(

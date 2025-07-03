@@ -6,6 +6,7 @@ class TestCard extends StatelessWidget {
   final VoidCallback? onStart;
   final VoidCallback? onResult;
   final int? testNumber;
+  final bool isPremium;
 
   const TestCard({
     super.key,
@@ -13,17 +14,18 @@ class TestCard extends StatelessWidget {
     this.onStart,
     this.onResult,
     this.testNumber,
+    this.isPremium = false,
   });
 
   RoundedRectangleBorder _cardShape(BuildContext context) =>
       RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side:
-            BorderSide(color: Theme.of(context).primaryColor.withOpacity(0.2)),
+        side: BorderSide(
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
       );
 
   BoxDecoration _iconContainerDecoration(Color color) => BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       );
 
@@ -98,8 +100,10 @@ class TestCard extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: _iconContainerDecoration(Theme.of(context).primaryColor),
-          child:
-              Icon(Icons.lock_outline, color: Theme.of(context).primaryColor),
+          child: isPremium
+              ? Icon(Icons.workspace_premium,
+                  color: Colors.green.withValues(alpha: 0.1))
+              : Icon(Icons.lock_outline, color: Theme.of(context).primaryColor),
         ),
         title: Text(
           testInfo.title,
@@ -109,8 +113,11 @@ class TestCard extends StatelessWidget {
             color: Theme.of(context).textTheme.bodyLarge?.color,
           ),
         ),
-        subtitle: _buildTestSubtitle(context),
-        trailing: _buildUnlockButton(context),
+        subtitle:
+            isPremium ? _buildTestStats(context) : _buildTestSubtitle(context),
+        trailing: isPremium
+            ? _buildStartButton(context)
+            : _buildUnlockButton(context),
       ),
     );
   }
@@ -129,7 +136,7 @@ class TestCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.1),
+        color: Colors.green.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: const Row(

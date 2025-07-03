@@ -142,10 +142,10 @@ class _ExamScreenState extends State<ExamScreen> {
       padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.05),
+        color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border:
-            Border.all(color: Theme.of(context).primaryColor.withOpacity(0.1)),
+        border: Border.all(
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,7 +169,7 @@ class _ExamScreenState extends State<ExamScreen> {
                   .textTheme
                   .bodyMedium
                   ?.color!
-                  .withOpacity(0.7),
+                  .withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 16),
@@ -201,9 +201,9 @@ class _ExamScreenState extends State<ExamScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
@@ -225,7 +225,7 @@ class _ExamScreenState extends State<ExamScreen> {
                     label,
                     style: TextStyle(
                       fontSize: 12,
-                      color: color.withOpacity(0.8),
+                      color: color.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
@@ -251,7 +251,7 @@ class _ExamScreenState extends State<ExamScreen> {
                           .textTheme
                           .bodyMedium
                           ?.color
-                          ?.withOpacity(0.7),
+                          ?.withValues(alpha: 0.7),
                     ),
                   ),
                 )
@@ -266,7 +266,7 @@ class _ExamScreenState extends State<ExamScreen> {
                           .textTheme
                           .bodyMedium
                           ?.color
-                          ?.withOpacity(0.7),
+                          ?.withValues(alpha: 0.7),
                     ),
                   ),
                 )
@@ -310,18 +310,18 @@ class _ExamScreenState extends State<ExamScreen> {
       child: Container(
         decoration: BoxDecoration(
           color: isSelected
-              ? Theme.of(context).primaryColor.withOpacity(0.1)
+              ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
               : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected
                 ? Theme.of(context).primaryColor
-                : Colors.grey.withOpacity(0.2),
+                : Colors.grey.withValues(alpha: 0.2),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -333,7 +333,7 @@ class _ExamScreenState extends State<ExamScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.05),
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
                 shape: BoxShape.circle,
               ),
               child: Image.network(
@@ -362,7 +362,7 @@ class _ExamScreenState extends State<ExamScreen> {
                     .textTheme
                     .bodyMedium
                     ?.color!
-                    .withOpacity(0.7),
+                    .withValues(alpha: 0.7),
               ),
               textAlign: TextAlign.center,
               maxLines: 2,
@@ -402,18 +402,18 @@ class _ExamScreenState extends State<ExamScreen> {
       child: Container(
         decoration: BoxDecoration(
           color: isSelected
-              ? Theme.of(context).primaryColor.withOpacity(0.1)
+              ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
               : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected
                 ? Theme.of(context).primaryColor
-                : Colors.grey.withOpacity(0.2),
+                : Colors.grey.withValues(alpha: 0.2),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -426,7 +426,7 @@ class _ExamScreenState extends State<ExamScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.05),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
                   shape: BoxShape.circle,
                 ),
                 child: Image.network(
@@ -455,7 +455,7 @@ class _ExamScreenState extends State<ExamScreen> {
                     .textTheme
                     .bodyMedium
                     ?.color!
-                    .withOpacity(0.7),
+                    .withValues(alpha: 0.7),
               ),
               textAlign: TextAlign.center,
               maxLines: 2,

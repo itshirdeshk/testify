@@ -146,7 +146,7 @@ class AppTheme {
     ),
     progressIndicatorTheme: ProgressIndicatorThemeData(
       color: darkPrimaryColor,
-      circularTrackColor: darkPrimaryColor.withOpacity(0.1),
+      circularTrackColor: darkPrimaryColor.withValues(alpha: 0.1),
     ),
   );
 }

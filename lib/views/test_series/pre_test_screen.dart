@@ -4,6 +4,8 @@ import 'package:testify/services/test_service.dart';
 import 'package:testify/views/result/result_screen.dart';
 import 'package:testify/views/test_series/test_details_screen.dart';
 import 'package:testify/widgets/test_cards/test_card.dart';
+import 'package:provider/provider.dart';
+import 'package:testify/providers/user_provider.dart';
 
 class PreTestScreen extends StatefulWidget {
   final String mockTestId;
@@ -60,6 +62,9 @@ class PreTestScreenState extends State<PreTestScreen> {
         _testResponse.unattemptedTests!.where((test) => !test.isFree).toList();
     final previouslyAttemptedTests = _testResponse.attemptedTests!;
 
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final isPremium = userProvider.user?.premium ?? false;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -77,10 +82,10 @@ class PreTestScreenState extends State<PreTestScreen> {
               child: Column(
                 children: [
                   Expanded(
-                    child: _buildFullTestTab(
-                        freeTests, previouslyAttemptedTests, premiumTests),
+                    child: _buildFullTestTab(freeTests,
+                        previouslyAttemptedTests, premiumTests, isPremium),
                   ),
-                  _buildUnlockButton(),
+                  isPremium ? _buildUnlockButton() : const SizedBox.shrink(),
                 ],
               ),
             ),
@@ -92,10 +97,10 @@ class PreTestScreenState extends State<PreTestScreen> {
   //     padding: const EdgeInsets.all(20),
   //     margin: const EdgeInsets.symmetric(horizontal: 16),
   //     decoration: BoxDecoration(
-  //       color: Theme.of(context).primaryColor.withOpacity(0.05),
+  //       color: Theme.of(context).primaryColor.withValues(alpha:0.05),
   //       borderRadius: BorderRadius.circular(16),
   //       border: Border.all(
-  //         color: Theme.of(context).primaryColor.withOpacity(0.1),
+  //         color: Theme.of(context).primaryColor.withValues(alpha:0.1),
   //       ),
   //     ),
   //     child: Column(
@@ -145,9 +150,9 @@ class PreTestScreenState extends State<PreTestScreen> {
   //     child: Container(
   //       padding: const EdgeInsets.all(12),
   //       decoration: BoxDecoration(
-  //         color: color.withOpacity(0.1),
+  //         color: color.withValues(alpha:0.1),
   //         borderRadius: BorderRadius.circular(12),
-  //         border: Border.all(color: color.withOpacity(0.2)),
+  //         border: Border.all(color: color.withValues(alpha:0.2)),
   //       ),
   //       child: Column(
   //         children: [
@@ -165,7 +170,7 @@ class PreTestScreenState extends State<PreTestScreen> {
   //             label,
   //             style: TextStyle(
   //               fontSize: 12,
-  //               color: color.withOpacity(0.8),
+  //               color: color.withValues(alpha:0.8),
   //             ),
   //           ),
   //         ],
@@ -215,8 +220,11 @@ class PreTestScreenState extends State<PreTestScreen> {
   //   );
   // }
 
-  Widget _buildFullTestTab(List<Test> freeTests,
-      List<Test> previouslyAttemptedTests, List<Test> premiumTests) {
+  Widget _buildFullTestTab(
+      List<Test> freeTests,
+      List<Test> previouslyAttemptedTests,
+      List<Test> premiumTests,
+      bool isPremium) {
     return freeTests.isEmpty &&
             premiumTests.isEmpty &&
             previouslyAttemptedTests.isEmpty
@@ -274,8 +282,11 @@ class PreTestScreenState extends State<PreTestScreen> {
                 const SizedBox(height: 16),
                 ...premiumTests.map((test) => TestCard(
                       testInfo: test,
-                      onStart: () => _navigateToTestDetails(test, false),
+                      onStart: isPremium
+                          ? () => _navigateToTestDetails(test, false)
+                          : () => _showPremiumDialog(),
                       testNumber: 1,
+                      isPremium: isPremium,
                     )),
               ],
               const SizedBox(height: 16),
@@ -321,7 +332,7 @@ class PreTestScreenState extends State<PreTestScreen> {
         ],
       ),
       child: ElevatedButton.icon(
-        onPressed: () => {},
+        onPressed: () => _showPremiumDialog(),
         icon: const Icon(Icons.lock_open),
         label: const Text('Unlock All Tests'),
         style: ElevatedButton.styleFrom(
@@ -373,6 +384,23 @@ class PreTestScreenState extends State<PreTestScreen> {
               Navigator.pop(context);
               _fetchTests();
             }),
+      ),
+    );
+  }
+
+  void _showPremiumDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Premium Test'),
+        content: const Text(
+            'This is a premium test. Contact Support to access it.\n\nUpgrade to premium for exclusive access to all premium tests and features!'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
       ),
     );
   }

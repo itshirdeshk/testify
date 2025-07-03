@@ -113,7 +113,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.02),
+        color: Theme.of(context).primaryColor.withValues(alpha: 0.02),
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(30)),
       ),
       child: SafeArea(
@@ -160,6 +160,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: Theme.of(context).textTheme.bodyMedium?.color,
               ),
             ),
+            if (user.premium) ...[
+              const SizedBox(height: 12),
+              Card(
+                elevation: 4,
+                color: const Color(0xFFFFF8E1), // light gold
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.workspace_premium,
+                          color: Colors.amber[800], size: 24),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Premium User',
+                        style: TextStyle(
+                          color: Colors.amber[900],
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -172,14 +202,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor.withOpacity(0.1),
+        color: Theme.of(context).cardColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: Theme.of(context).dividerColor,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -220,7 +250,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor.withOpacity(0.1),
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: Theme.of(context).primaryColor),

@@ -84,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Theme.of(context).primaryColor.withOpacity(0.1),
+                  Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   Theme.of(context).scaffoldBackgroundColor,
                 ],
               ),
@@ -100,8 +100,9 @@ class _SplashScreenState extends State<SplashScreen>
                       child: Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color:
-                              Theme.of(context).primaryColor.withOpacity(0.1),
+                          color: Theme.of(context)
+                              .primaryColor
+                              .withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -143,7 +144,7 @@ class _SplashScreenState extends State<SplashScreen>
                   // const SizedBox(height: 48),
                   // CircularProgressIndicator(
                   //   valueColor: AlwaysStoppedAnimation<Color>(
-                  //     Theme.of(context).primaryColor.withOpacity(0.5),
+                  //     Theme.of(context).primaryColor.withValues(alpha:0.5),
                   //   ),
                   //   strokeWidth: 3,
                   // ),

@@ -89,7 +89,7 @@ class LeaderboardScreenState extends State<LeaderboardScreen>
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: Theme.of(context).dividerColor.withOpacity(0.1),
+                  color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
                 ),
               ),
             ),
@@ -103,7 +103,7 @@ class LeaderboardScreenState extends State<LeaderboardScreen>
                   .textTheme
                   .bodyMedium
                   ?.color
-                  ?.withOpacity(0.7),
+                  ?.withValues(alpha: 0.7),
               indicatorColor: Theme.of(context).primaryColor,
               indicatorWeight: 3,
               labelStyle:
@@ -143,7 +143,9 @@ class LeaderboardScreenState extends State<LeaderboardScreen>
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withOpacity(0.1),
+                        color: Theme.of(context)
+                            .primaryColor
+                            .withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
@@ -240,7 +242,7 @@ class LeaderboardScreenState extends State<LeaderboardScreen>
             gradient: LinearGradient(
               colors: [
                 Theme.of(context).primaryColor,
-                Theme.of(context).primaryColor.withOpacity(0.7),
+                Theme.of(context).primaryColor.withValues(alpha: 0.7),
               ],
             ),
           ),
@@ -271,8 +273,8 @@ class LeaderboardScreenState extends State<LeaderboardScreen>
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Theme.of(context).primaryColor.withOpacity(0.2),
-                Theme.of(context).primaryColor.withOpacity(0.05),
+                Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                Theme.of(context).primaryColor.withValues(alpha: 0.05),
               ],
             ),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
@@ -333,7 +335,8 @@ class LeaderboardScreenState extends State<LeaderboardScreen>
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    color:
+                        Theme.of(context).primaryColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Center(
@@ -356,7 +359,8 @@ class LeaderboardScreenState extends State<LeaderboardScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    color:
+                        Theme.of(context).primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(

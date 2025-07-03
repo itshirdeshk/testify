@@ -5,6 +5,11 @@ import 'package:testify/core/theme/app_theme.dart';
 import 'package:testify/providers/test_provider.dart';
 import 'package:testify/providers/user_provider.dart';
 import 'package:testify/providers/theme_provider.dart';
+import 'views/faq/faq_screen.dart';
+import 'views/about_us/about_us_screen.dart';
+import 'views/privacy_policy/privacy_policy_screen.dart';
+import 'views/terms/terms_screen.dart';
+import 'custom/widgets/base_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,6 +40,13 @@ class MyApp extends StatelessWidget {
           initialRoute: '/splash_screen',
           onGenerateRoute: AppRoutes.generateRoute,
           debugShowCheckedModeBanner: false,
+          home: const BaseScreen(),
+          routes: {
+            '/faq': (context) => const FAQScreen(),
+            '/about-us': (context) => const AboutUsScreen(),
+            '/privacy-policy': (context) => const PrivacyPolicyScreen(),
+            '/terms': (context) => const TermsScreen(),
+          },
         );
       },
     );

@@ -101,7 +101,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                                 .textTheme
                                 .bodyMedium
                                 ?.color
-                                ?.withOpacity(0.7),
+                                ?.withValues(alpha: 0.7),
                           ),
                         ),
                       )
@@ -118,10 +118,10 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
       padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.05),
+        color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border:
-            Border.all(color: Theme.of(context).primaryColor.withOpacity(0.1)),
+        border: Border.all(
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,7 +143,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                   .textTheme
                   .bodyMedium
                   ?.color
-                  ?.withOpacity(0.7),
+                  ?.withValues(alpha: 0.7),
             ),
           ),
           // const SizedBox(height: 16),
@@ -175,9 +175,9 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
   //     child: Container(
   //       padding: const EdgeInsets.all(16),
   //       decoration: BoxDecoration(
-  //         color: color.withOpacity(0.1),
+  //         color: color.withValues(alpha:0.1),
   //         borderRadius: BorderRadius.circular(12),
-  //         border: Border.all(color: color.withOpacity(0.2)),
+  //         border: Border.all(color: color.withValues(alpha:0.2)),
   //       ),
   //       child: Row(
   //         children: [
@@ -199,7 +199,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
   //                   label,
   //                   style: TextStyle(
   //                     fontSize: 12,
-  //                     color: color.withOpacity(0.8),
+  //                     color: color.withValues(alpha:0.8),
   //                   ),
   //                 ),
   //               ],
@@ -217,8 +217,8 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
-        border:
-            Border.all(color: Theme.of(context).primaryColor.withOpacity(0.2)),
+        border: Border.all(
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
       ),
       child: TextField(
         decoration: InputDecoration(
@@ -228,7 +228,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                   .textTheme
                   .bodyMedium
                   ?.color!
-                  .withOpacity(0.7)),
+                  .withValues(alpha: 0.7)),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.all(16),
         ),
@@ -260,7 +260,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
         label: Text(label),
         onSelected: (bool value) {},
         backgroundColor: Theme.of(context).cardColor,
-        selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
+        selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
         labelStyle: TextStyle(
           color: isSelected
               ? Theme.of(context).primaryColor
@@ -295,12 +295,12 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Theme.of(context).primaryColor.withOpacity(0.2),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).primaryColor.withOpacity(0.05),
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -311,7 +311,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
         leading: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor.withOpacity(0.1),
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
@@ -338,7 +338,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                     .textTheme
                     .bodyMedium
                     ?.color
-                    ?.withOpacity(0.7),
+                    ?.withValues(alpha: 0.7),
               ),
             ),
             const SizedBox(height: 8),

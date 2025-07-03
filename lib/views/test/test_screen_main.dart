@@ -91,10 +91,10 @@ class TestScreenMainState extends State<TestScreenMain> {
   //   return Container(
   //     padding: const EdgeInsets.all(16),
   //     decoration: BoxDecoration(
-  //       color: Theme.of(context).primaryColor.withOpacity(0.05),
+  //       color: Theme.of(context).primaryColor.withValues(alpha:0.05),
   //       borderRadius: BorderRadius.circular(16),
   //       border: Border.all(
-  //         color: Theme.of(context).primaryColor.withOpacity(0.1),
+  //         color: Theme.of(context).primaryColor.withValues(alpha:0.1),
   //       ),
   //     ),
   //     margin: const EdgeInsets.all(16),
@@ -160,7 +160,7 @@ class TestScreenMainState extends State<TestScreenMain> {
   //         label,
   //         style: TextStyle(
   //           fontSize: 12,
-  //           color: color.withOpacity(0.8),
+  //           color: color.withValues(alpha:0.8),
   //         ),
   //       ),
   //     ],
@@ -206,7 +206,7 @@ class TestScreenMainState extends State<TestScreenMain> {
   //                               decoration: BoxDecoration(
   //                                 color: Theme.of(context)
   //                                     .primaryColor
-  //                                     .withOpacity(0.1),
+  //                                     .withValues(alpha:0.1),
   //                                 borderRadius: BorderRadius.circular(8),
   //                               ),
   //                               child: Icon(
@@ -239,7 +239,7 @@ class TestScreenMainState extends State<TestScreenMain> {
   //                                           .textTheme
   //                                           .bodyMedium
   //                                           ?.color!
-  //                                           .withOpacity(0.7),
+  //                                           .withValues(alpha:0.7),
   //                                       fontSize: 12,
   //                                     ),
   //                                   ),
@@ -260,7 +260,7 @@ class TestScreenMainState extends State<TestScreenMain> {
   //                                       .textTheme
   //                                       .bodyMedium
   //                                       ?.color!
-  //                                       .withOpacity(0.7),
+  //                                       .withValues(alpha:0.7),
   //                                   fontSize: 12,
   //                                 ),
   //                               ),
@@ -410,7 +410,7 @@ class TestScreenMainState extends State<TestScreenMain> {
             //                     decoration: BoxDecoration(
             //                       color: Theme.of(context)
             //                           .primaryColor
-            //                           .withOpacity(0.1),
+            //                           .withValues(alpha:0.1),
             //                       borderRadius: BorderRadius.circular(20),
             //                     ),
             //                     child: Text(
@@ -431,7 +431,7 @@ class TestScreenMainState extends State<TestScreenMain> {
             //                             .textTheme
             //                             .bodyMedium
             //                             ?.color
-            //                             ?.withOpacity(0.7),
+            //                             ?.withValues(alpha:0.7),
             //                         size: 16,
             //                       ),
             //                       const SizedBox(width: 4),
@@ -443,7 +443,7 @@ class TestScreenMainState extends State<TestScreenMain> {
             //                               .textTheme
             //                               .bodyLarge
             //                               ?.color!
-            //                               .withOpacity(0.7),
+            //                               .withValues(alpha:0.7),
             //                         ),
             //                       ),
             //                     ],
@@ -458,7 +458,7 @@ class TestScreenMainState extends State<TestScreenMain> {
             //                             .textTheme
             //                             .bodyLarge
             //                             ?.color!
-            //                             .withOpacity(0.7),
+            //                             .withValues(alpha:0.7),
             //                       ),
             //                       const SizedBox(width: 4),
             //                       Text(
@@ -469,7 +469,7 @@ class TestScreenMainState extends State<TestScreenMain> {
             //                               .textTheme
             //                               .bodyLarge
             //                               ?.color!
-            //                               .withOpacity(0.7),
+            //                               .withValues(alpha:0.7),
             //                         ),
             //                       ),
             //                     ],
@@ -545,7 +545,7 @@ class TestScreenMainState extends State<TestScreenMain> {
                             .textTheme
                             .bodyMedium
                             ?.color
-                            ?.withOpacity(0.7),
+                            ?.withValues(alpha: 0.7),
                       ),
                     ),
                   )
@@ -570,7 +570,7 @@ class TestScreenMainState extends State<TestScreenMain> {
                                   decoration: BoxDecoration(
                                     color: Theme.of(context)
                                         .primaryColor
-                                        .withOpacity(0.1),
+                                        .withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Row(
@@ -597,7 +597,7 @@ class TestScreenMainState extends State<TestScreenMain> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: Colors.green.withOpacity(0.1),
+                                    color: Colors.green.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Row(
@@ -685,7 +685,7 @@ class TestScreenMainState extends State<TestScreenMain> {
                       .textTheme
                       .bodyMedium
                       ?.color
-                      ?.withOpacity(0.7),
+                      ?.withValues(alpha: 0.7),
                 ),
               ),
             )
@@ -706,7 +706,7 @@ class TestScreenMainState extends State<TestScreenMain> {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             ),

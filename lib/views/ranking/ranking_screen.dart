@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class RankingScreen extends StatefulWidget {
-
   const RankingScreen({super.key});
 
   @override
@@ -55,10 +54,10 @@ class _RankingScreenState extends State<RankingScreen> {
       padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.05),
+        color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
@@ -108,9 +107,9 @@ class _RankingScreenState extends State<RankingScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Column(
           children: [
@@ -128,7 +127,7 @@ class _RankingScreenState extends State<RankingScreen> {
               label,
               style: TextStyle(
                 fontSize: 12,
-                color: color.withOpacity(0.8),
+                color: color.withValues(alpha: 0.8),
               ),
             ),
           ],
@@ -165,7 +164,7 @@ class _RankingScreenState extends State<RankingScreen> {
       children: [
         CircleAvatar(
           radius: 20,
-          backgroundColor: color.withOpacity(0.2),
+          backgroundColor: color.withValues(alpha: 0.2),
           child: Text(
             user['name'][0],
             style: TextStyle(
@@ -179,7 +178,7 @@ class _RankingScreenState extends State<RankingScreen> {
           width: 60,
           height: height,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
           ),
           child: Column(
@@ -219,21 +218,21 @@ class _RankingScreenState extends State<RankingScreen> {
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
             color: isCurrentUser
-                ? Theme.of(context).primaryColor.withOpacity(0.1)
+                ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
                 : Colors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isCurrentUser
                   ? Theme.of(context).primaryColor
-                  : Colors.grey.withOpacity(0.2),
+                  : Colors.grey.withValues(alpha: 0.2),
             ),
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.all(16),
             leading: CircleAvatar(
               backgroundColor: isCurrentUser
-                  ? Theme.of(context).primaryColor.withOpacity(0.2)
-                  : Colors.grey.withOpacity(0.2),
+                  ? Theme.of(context).primaryColor.withValues(alpha: 0.2)
+                  : Colors.grey.withValues(alpha: 0.2),
               child: Text(
                 user['name'][0],
                 style: TextStyle(
@@ -258,14 +257,14 @@ class _RankingScreenState extends State<RankingScreen> {
                       .textTheme
                       .bodyMedium
                       ?.color!
-                      .withOpacity(0.7)),
+                      .withValues(alpha: 0.7)),
             ),
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: isCurrentUser
-                    ? Theme.of(context).primaryColor.withOpacity(0.1)
-                    : Colors.grey.withOpacity(0.1),
+                    ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
+                    : Colors.grey.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(

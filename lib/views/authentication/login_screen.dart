@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
- Future<void> _handleLogin() async {
+  Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
@@ -103,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor.withOpacity(0.1),
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
@@ -217,11 +217,13 @@ class _LoginScreenState extends State<LoginScreen> {
     required String label,
     required IconData icon,
     TextInputType? keyboardType,
- bool isPassword = false, bool? obscureText,
+    bool isPassword = false,
+    bool? obscureText,
     VoidCallback? onToggleVisibility,
     String? Function(String?)? validator,
     FocusNode? focusNode,
-  }) {    return Column(
+  }) {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
@@ -233,11 +235,11 @@ class _LoginScreenState extends State<LoginScreen> {
           child: TextFormField(
             controller: controller,
             obscureText: isPassword ? (obscureText ?? true) : false,
- keyboardType: keyboardType,
+            keyboardType: keyboardType,
             focusNode: focusNode,
             style:
                 TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
- decoration: InputDecoration(
+            decoration: InputDecoration(
               labelText: label,
               labelStyle: TextStyle(
                   color: Theme.of(context).textTheme.bodyMedium?.color),
@@ -253,11 +255,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   : null,
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(16),
- errorText: validator?.call(controller.text),
+              errorText: validator?.call(controller.text),
             ),
             validator: validator,
           ),
-        ) 
+        )
       ],
     );
   }
@@ -268,7 +270,8 @@ class _LoginScreenState extends State<LoginScreen> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: _isLoading ? null
+            onPressed: _isLoading
+                ? null
                 : _handleLogin, // Disable button if any field is focused or loading
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,

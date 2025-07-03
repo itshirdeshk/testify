@@ -130,7 +130,7 @@ class _BaseScreenState extends State<BaseScreen> {
             end: Alignment.bottomCenter,
             colors: [
               Theme.of(context).cardColor,
-              Theme.of(context).primaryColor.withOpacity(0.3),
+              Theme.of(context).primaryColor.withValues(alpha: 0.3),
             ],
           ),
         ),
@@ -196,6 +196,26 @@ class _BaseScreenState extends State<BaseScreen> {
               onTap: () {},
             ),
             _buildDrawerItem(
+              icon: Icons.question_answer_outlined,
+              title: 'FAQs',
+              onTap: () => Navigator.pushNamed(context, '/faq'),
+            ),
+            _buildDrawerItem(
+              icon: Icons.info_outline,
+              title: 'About Us',
+              onTap: () => Navigator.pushNamed(context, '/about-us'),
+            ),
+            _buildDrawerItem(
+              icon: Icons.privacy_tip_outlined,
+              title: 'Privacy Policy',
+              onTap: () => Navigator.pushNamed(context, '/privacy-policy'),
+            ),
+            _buildDrawerItem(
+              icon: Icons.article_outlined,
+              title: 'Terms & Conditions',
+              onTap: () => Navigator.pushNamed(context, '/terms'),
+            ),
+            _buildDrawerItem(
               icon: Icons.exit_to_app,
               title: 'Logout',
               onTap: () => _onLogout(userProvider),
@@ -216,7 +236,7 @@ class _BaseScreenState extends State<BaseScreen> {
         right: 16,
       ),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.1),
+        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
       ),
       child: Column(
         children: [
@@ -298,7 +318,7 @@ class _BaseScreenState extends State<BaseScreen> {
         color: Theme.of(context).scaffoldBackgroundColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),

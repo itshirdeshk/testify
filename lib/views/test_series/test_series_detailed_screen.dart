@@ -80,7 +80,7 @@ class TestSeriesDetailScreenState extends State<TestSeriesDetailScreen> {
             Expanded(
               child: _buildTestList(),
             ),
-            _buildBottomButton(),
+            // _buildBottomButton(),
           ],
         ),
       ),
@@ -92,10 +92,10 @@ class TestSeriesDetailScreenState extends State<TestSeriesDetailScreen> {
       padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.05),
+        color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
@@ -158,7 +158,7 @@ class TestSeriesDetailScreenState extends State<TestSeriesDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -271,7 +271,8 @@ class TestSeriesDetailScreenState extends State<TestSeriesDetailScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: BorderSide(
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    color:
+                        Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   ),
                 ),
                 child: InkWell(
@@ -289,7 +290,7 @@ class TestSeriesDetailScreenState extends State<TestSeriesDetailScreen> {
                               decoration: BoxDecoration(
                                 color: Theme.of(context)
                                     .primaryColor
-                                    .withOpacity(0.1),
+                                    .withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(
@@ -322,7 +323,7 @@ class TestSeriesDetailScreenState extends State<TestSeriesDetailScreen> {
                                           .textTheme
                                           .bodyMedium
                                           ?.color
-                                          ?.withOpacity(0.8),
+                                          ?.withValues(alpha: 0.8),
                                     ),
                                   ),
                                 ],
@@ -339,36 +340,36 @@ class TestSeriesDetailScreenState extends State<TestSeriesDetailScreen> {
           );
   }
 
-  Widget _buildBottomButton() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: ElevatedButton.icon(
-        onPressed: () {
-          // Implement unlock action
-        },
-        icon: const Icon(Icons.lock_open),
-        label: const Text('Unlock All Tests'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).primaryColor,
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          minimumSize: const Size(double.infinity, 45),
-        ),
-      ),
-    );
-  }
+  // Widget _buildBottomButton() {
+  //   return Container(
+  //     padding: const EdgeInsets.all(16),
+  //     decoration: BoxDecoration(
+  //       color: Theme.of(context).cardColor,
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: Colors.black.withValues(alpha: 0.05),
+  //           blurRadius: 10,
+  //           offset: const Offset(0, -5),
+  //         ),
+  //       ],
+  //     ),
+  //     child: ElevatedButton.icon(
+  //       onPressed: () {
+  //         // Implement unlock action
+  //       },
+  //       icon: const Icon(Icons.lock_open),
+  //       label: const Text('Unlock All Tests'),
+  //       style: ElevatedButton.styleFrom(
+  //         backgroundColor: Theme.of(context).primaryColor,
+  //         padding: const EdgeInsets.symmetric(vertical: 12),
+  //         shape: RoundedRectangleBorder(
+  //           borderRadius: BorderRadius.circular(8),
+  //         ),
+  //         minimumSize: const Size(double.infinity, 45),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   void _navigateToPreTest(String testName, String mockTestId) {
     Navigator.push(

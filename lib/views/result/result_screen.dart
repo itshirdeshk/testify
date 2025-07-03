@@ -159,7 +159,7 @@ class ResultScreenState extends State<ResultScreen>
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: Theme.of(context).dividerColor.withOpacity(0.1),
+                  color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
                 ),
               ),
             ),
@@ -175,7 +175,7 @@ class ResultScreenState extends State<ResultScreen>
                   .textTheme
                   .bodyMedium
                   ?.color
-                  ?.withOpacity(0.7),
+                  ?.withValues(alpha: 0.7),
               indicatorColor: Theme.of(context).primaryColor,
               indicatorWeight: 3,
               labelStyle:
@@ -233,8 +233,8 @@ class ResultScreenState extends State<ResultScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Theme.of(context).primaryColor.withOpacity(0.05),
-              Theme.of(context).primaryColor.withOpacity(0.1),
+              Theme.of(context).primaryColor.withValues(alpha: 0.05),
+              Theme.of(context).primaryColor.withValues(alpha: 0.1),
             ],
           ),
           borderRadius: BorderRadius.circular(16),
@@ -254,9 +254,9 @@ class ResultScreenState extends State<ResultScreen>
                 //   padding:
                 //       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 //   decoration: BoxDecoration(
-                //     color: Colors.green.withOpacity(0.1),
+                //     color: Colors.green.withValues(alpha:0.1),
                 //     borderRadius: BorderRadius.circular(20),
-                //     border: Border.all(color: Colors.green.withOpacity(0.3)),
+                //     border: Border.all(color: Colors.green.withValues(alpha:0.3)),
                 //   ),
                 //   child: const Row(
                 //     mainAxisSize: MainAxisSize.min,
@@ -288,7 +288,8 @@ class ResultScreenState extends State<ResultScreen>
                       color: Theme.of(context).primaryColor,
                       width: 2,
                     ),
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    color:
+                        Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   ),
                 ),
                 Container(
@@ -299,7 +300,9 @@ class ResultScreenState extends State<ResultScreen>
                     color: Theme.of(context).cardColor,
                     boxShadow: [
                       BoxShadow(
-                        color: Theme.of(context).shadowColor.withOpacity(0.1),
+                        color: Theme.of(context)
+                            .shadowColor
+                            .withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -365,8 +368,11 @@ class ResultScreenState extends State<ResultScreen>
           label,
           style: TextStyle(
             fontSize: 12,
-            color:
-                Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+            color: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.color
+                ?.withValues(alpha: 0.7),
           ),
         ),
       ],
@@ -380,8 +386,8 @@ class ResultScreenState extends State<ResultScreen>
       margin: const EdgeInsets.symmetric(horizontal: 16),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side:
-            BorderSide(color: Theme.of(context).primaryColor.withOpacity(0.1)),
+        side: BorderSide(
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.1)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -432,8 +438,11 @@ class ResultScreenState extends State<ResultScreen>
         Text(
           label,
           style: TextStyle(
-            color:
-                Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+            color: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.color
+                ?.withValues(alpha: 0.7),
             fontSize: 12,
           ),
         ),
@@ -469,7 +478,8 @@ class ResultScreenState extends State<ResultScreen>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      color:
+                          Theme.of(context).primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -500,16 +510,16 @@ class ResultScreenState extends State<ResultScreen>
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: isCorrect
-                          ? Colors.green.withOpacity(0.1)
+                          ? Colors.green.withValues(alpha: 0.1)
                           : (isSelected
-                              ? Colors.red.withOpacity(0.1)
+                              ? Colors.red.withValues(alpha: 0.1)
                               : Theme.of(context).cardColor),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isCorrect
-                            ? Colors.green.withOpacity(0.3)
+                            ? Colors.green.withValues(alpha: 0.3)
                             : (isSelected
-                                ? Colors.red.withOpacity(0.3)
+                                ? Colors.red.withValues(alpha: 0.3)
                                 : Theme.of(context).dividerColor),
                       ),
                     ),
@@ -538,7 +548,7 @@ class ResultScreenState extends State<ResultScreen>
                                       .textTheme
                                       .bodyMedium
                                       ?.color
-                                      ?.withOpacity(0.7),
+                                      ?.withValues(alpha: 0.7),
                             ),
                           ),
                         ),
@@ -574,7 +584,9 @@ class ResultScreenState extends State<ResultScreen>
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withOpacity(0.1),
+                        color: Theme.of(context)
+                            .primaryColor
+                            .withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
@@ -672,7 +684,7 @@ class ResultScreenState extends State<ResultScreen>
             gradient: LinearGradient(
               colors: [
                 Theme.of(context).primaryColor,
-                Theme.of(context).primaryColor.withOpacity(0.7),
+                Theme.of(context).primaryColor.withValues(alpha: 0.7),
               ],
             ),
           ),
@@ -703,8 +715,8 @@ class ResultScreenState extends State<ResultScreen>
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Theme.of(context).primaryColor.withOpacity(0.2),
-                Theme.of(context).primaryColor.withOpacity(0.05),
+                Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                Theme.of(context).primaryColor.withValues(alpha: 0.05),
               ],
             ),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
@@ -765,7 +777,8 @@ class ResultScreenState extends State<ResultScreen>
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    color:
+                        Theme.of(context).primaryColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Center(
@@ -788,7 +801,8 @@ class ResultScreenState extends State<ResultScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    color:
+                        Theme.of(context).primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -809,7 +823,7 @@ class ResultScreenState extends State<ResultScreen>
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.1),
+        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Theme.of(context).dividerColor),
       ),
@@ -822,7 +836,7 @@ class ResultScreenState extends State<ResultScreen>
               gradient: LinearGradient(
                 colors: [
                   Theme.of(context).primaryColor,
-                  Theme.of(context).primaryColor.withOpacity(0.7),
+                  Theme.of(context).primaryColor.withValues(alpha: 0.7),
                 ],
               ),
             ),
@@ -900,8 +914,8 @@ class ResultScreenState extends State<ResultScreen>
       margin: const EdgeInsets.symmetric(horizontal: 16),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side:
-            BorderSide(color: Theme.of(context).primaryColor.withOpacity(0.1)),
+        side: BorderSide(
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.1)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -962,7 +976,8 @@ class ResultScreenState extends State<ResultScreen>
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    color:
+                        Theme.of(context).primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -1023,9 +1038,9 @@ class ResultScreenState extends State<ResultScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [

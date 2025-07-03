@@ -61,10 +61,10 @@ class TestDetailsScreen extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.05),
+        color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
@@ -109,7 +109,7 @@ class TestDetailsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: Theme.of(context).primaryColor, size: 20),
@@ -134,7 +134,7 @@ class TestDetailsScreen extends StatelessWidget {
                       .textTheme
                       .bodyLarge
                       ?.color
-                      ?.withOpacity(0.6),
+                      ?.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -192,9 +192,9 @@ class TestDetailsScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -211,7 +211,7 @@ class TestDetailsScreen extends StatelessWidget {
                       .textTheme
                       .bodyLarge
                       ?.color
-                      ?.withOpacity(0.8),
+                      ?.withValues(alpha: 0.8),
                 ),
               ),
               const SizedBox(height: 4),
@@ -253,7 +253,8 @@ class TestDetailsScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      color:
+                          Theme.of(context).primaryColor.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Text(
@@ -288,16 +289,16 @@ class TestDetailsScreen extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.orange.withOpacity(0.05),
+        color: Colors.orange.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.withOpacity(0.2)),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.1),
+              color: Colors.orange.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(
@@ -327,7 +328,7 @@ class TestDetailsScreen extends StatelessWidget {
                         .textTheme
                         .bodySmall
                         ?.color
-                        ?.withOpacity(0.8),
+                        ?.withValues(alpha: 0.8),
                   ),
                 ),
               ],
@@ -345,7 +346,7 @@ class TestDetailsScreen extends StatelessWidget {
         color: Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -379,8 +380,11 @@ class TestDetailsScreen extends StatelessWidget {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                      builder: (context) =>
-                          QuizScreen(testName: testName, testId: testId, duration: duration, isAttempted: isAttempted)),
+                      builder: (context) => QuizScreen(
+                          testName: testName,
+                          testId: testId,
+                          duration: duration,
+                          isAttempted: isAttempted)),
                 );
               },
               icon: const Icon(Icons.play_arrow),
