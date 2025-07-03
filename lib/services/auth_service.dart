@@ -59,6 +59,7 @@ class AuthService {
         examName: userData['exam']['name'],
         subExamName: userData['subExam']['name'],
         profilePicture: userData['profilePicture'] ?? '',
+        premium: userData['premium'],
       );
 
       if (context.mounted) {
@@ -82,6 +83,7 @@ class AuthService {
         name: userData['name'],
         email: userData['email'],
         phone: userData['phone'].toString(),
+        premium: userData['premium'],
       );
 
       if (context.mounted) {

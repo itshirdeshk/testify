@@ -45,7 +45,6 @@ class AuthController {
         return false;
       }
     } catch (e) {
-      print(e.toString());
       return false;
     }
   }

@@ -44,6 +44,7 @@ class ProfileService {
           examName: userData['examName'],
           subExamName: userData['subExamName'],
           profilePicture: userData['profilePicture'] ?? '',
+          premium: userData['premium'],
         );
       }
       return null;

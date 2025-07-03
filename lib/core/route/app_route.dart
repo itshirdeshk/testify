@@ -44,7 +44,7 @@ class AppRoutes {
     '/change_password': (context) => const ChangePasswordScreen(),
     '/exam': (context) => const ExamScreen(),
     '/home': (context) => const HomeScreen(),
-    '/ranking': (context) => RankingScreen(),
+    '/ranking': (context) => const RankingScreen(),
     '/profile': (context) => const ProfileScreen(),
     '/edit_profile': (context) => const profile_edit.EditProfileScreen(),
     '/test_screen_main': (context) => const TestScreenMain(),

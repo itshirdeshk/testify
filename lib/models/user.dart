@@ -4,6 +4,7 @@ class User {
   final String name;
   final String email;
   final String phone;
+  final bool premium;
   String profilePicture;
   String? examId;
   String? subExamId;
@@ -15,6 +16,7 @@ class User {
       required this.name,
       required this.email,
       required this.phone,
+      required this.premium,
       this.profilePicture = '',
       this.examId = '',
       this.subExamId = '',

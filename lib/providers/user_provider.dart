@@ -39,6 +39,7 @@ class UserProvider with ChangeNotifier {
         'subExamId': _user!.subExamId,
         'examName': _user!.examName,
         'subExamName': _user!.subExamName,
+        'premium': _user!.premium,
       };
       await prefs.setString('user_data', jsonEncode(userData));
     }
@@ -59,6 +60,7 @@ class UserProvider with ChangeNotifier {
         subExamId: userData['subExamId'],
         examName: userData['examName'],
         subExamName: userData['subExamName'],
+        premium: userData['premium'],
       );
       notifyListeners();
     }
