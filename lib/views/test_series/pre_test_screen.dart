@@ -85,7 +85,7 @@ class PreTestScreenState extends State<PreTestScreen> {
                     child: _buildFullTestTab(freeTests,
                         previouslyAttemptedTests, premiumTests, isPremium),
                   ),
-                  isPremium ? _buildUnlockButton() : const SizedBox.shrink(),
+                  !isPremium ? _buildUnlockButton() : const SizedBox.shrink(),
                 ],
               ),
             ),
