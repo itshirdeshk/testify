@@ -17,7 +17,7 @@ class TermsService {
     try {
       final response = await _dio.get('/all/terms');
       if (response.statusCode == 200) {
-        final List data = response.data;
+        final List data = response.data['terms'];
         return data.map((e) => Terms.fromJson(e)).toList();
       } else {
         throw Exception('Failed to load Terms');

@@ -17,7 +17,7 @@ class AboutUsService {
     try {
       final response = await _dio.get('/all/about-us');
       if (response.statusCode == 200) {
-        final List data = response.data;
+        final List data = response.data['aboutUs'];
         return data.map((e) => AboutUs.fromJson(e)).toList();
       } else {
         throw Exception('Failed to load About Us');

@@ -17,7 +17,7 @@ class PrivacyPolicyService {
     try {
       final response = await _dio.get('/all/privacy-policy');
       if (response.statusCode == 200) {
-        final List data = response.data;
+        final List data = response.data['privacyPolicies'];
         return data.map((e) => PrivacyPolicy.fromJson(e)).toList();
       } else {
         throw Exception('Failed to load Privacy Policies');

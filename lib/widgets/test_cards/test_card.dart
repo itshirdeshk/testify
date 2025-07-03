@@ -101,8 +101,7 @@ class TestCard extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           decoration: _iconContainerDecoration(Theme.of(context).primaryColor),
           child: isPremium
-              ? Icon(Icons.workspace_premium,
-                  color: Colors.green.withValues(alpha: 0.1))
+              ? const Icon(Icons.workspace_premium, color: Colors.green)
               : Icon(Icons.lock_outline, color: Theme.of(context).primaryColor),
         ),
         title: Text(

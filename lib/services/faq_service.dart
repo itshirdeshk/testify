@@ -17,7 +17,7 @@ class FAQService {
     try {
       final response = await _dio.get('/all/faq');
       if (response.statusCode == 200) {
-        final List data = response.data;
+        final List data = response.data['faqs'];
         return data.map((e) => FAQ.fromJson(e)).toList();
       } else {
         throw Exception('Failed to load FAQs');
