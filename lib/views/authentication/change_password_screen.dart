@@ -18,13 +18,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   bool _isLoading = false;
   bool _obscureOldPassword = true;
   bool _obscureNewPassword = true;
+  bool _showErrors = false;
+  String? _oldPasswordError;
+  String? _newPasswordError;
 
   Future<void> _handleChangePassword() async {
-    if (!_formKey.currentState!.validate()) {
-      // If validation fails, return
-      return;
-    }
-
+    setState(() => _showErrors = true);
+    final isValid = _validateFields();
+    if (!isValid) return;
     setState(() => _isLoading = true);
     final AuthService authService = AuthService();
     try {
@@ -59,6 +60,33 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     }
   }
 
+  bool _validateFields() {
+    final oldPassword = _oldPasswordController.text;
+    final newPassword = _newPasswordController.text;
+    _oldPasswordError = _validateOldPassword(oldPassword);
+    _newPasswordError = _validateNewPassword(newPassword);
+    setState(() {});
+    return _oldPasswordError == null && _newPasswordError == null;
+  }
+
+  String? _validateOldPassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your old password';
+    }
+    return null;
+  }
+
+  String? _validateNewPassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your new password';
+    }
+    if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$')
+        .hasMatch(value)) {
+      return 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character';
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,11 +118,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       setState(
                           () => _obscureOldPassword = !_obscureOldPassword);
                     },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your old password';
-                      }
-                      return null;
+                    onChanged: (value) {
+                      // Placeholder for onChanged
                     },
                   ),
                   const SizedBox(height: 24),
@@ -106,19 +131,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       setState(
                           () => _obscureNewPassword = !_obscureNewPassword);
                     },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your new password';
-                      }
-                      if (!RegExp(
-                              r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$')
-                          .hasMatch(value)) {
-                        return 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character';
-                      }
-                      return null;
+                    onChanged: (value) {
+                      // Placeholder for onChanged
                     },
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 12),
                   _buildSendButton(),
                 ],
               ),
@@ -171,7 +188,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     TextEditingController controller, {
     bool obscureText = true,
     VoidCallback? onToggleVisibility,
-    String? Function(String?)? validator,
+    ValueChanged<String>? onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,7 +196,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         Container(
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Theme.of(context).dividerColor),
           ),
           child: TextFormField(
@@ -188,6 +205,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             keyboardType: TextInputType.visiblePassword,
             style:
                 TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+            onChanged: onChanged,
             decoration: InputDecoration(
               labelText: title,
               labelStyle: TextStyle(
@@ -206,12 +224,48 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       onPressed: onToggleVisibility,
                     )
                   : null,
-              border: InputBorder.none,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: Theme.of(context).dividerColor),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: Theme.of(context).dividerColor),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide:
+                    BorderSide(color: Theme.of(context).primaryColor, width: 2),
+              ),
               contentPadding: const EdgeInsets.all(16),
+              errorText: null,
             ),
-            validator: validator,
           ),
-        ), // Removed extra Padding and SizedBox for error text
+        ),
+        if (_showErrors && title == 'Old Password' && _oldPasswordError != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0, left: 4.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _oldPasswordError!,
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.error, fontSize: 12),
+              ),
+            ),
+          ),
+        if (_showErrors && title == 'New Password' && _newPasswordError != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0, left: 4.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _newPasswordError!,
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.error, fontSize: 12),
+              ),
+            ),
+          ),
       ],
     );
   }

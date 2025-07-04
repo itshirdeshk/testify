@@ -20,13 +20,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _showErrors = false;
+  String? _otpError;
+  String? _passwordError;
+  String? _confirmPasswordError;
 
   Future<void> _handleResetPassword() async {
-    if (!_formKey.currentState!.validate()) {
-      // If validation fails, return
-      return;
-    }
-
+    setState(() => _showErrors = true);
+    final isValid = _validateFields();
+    if (!isValid) return;
     setState(() => _isLoading = true);
     final AuthService authService = AuthService();
     try {
@@ -68,6 +70,50 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     }
   }
 
+  bool _validateFields() {
+    final otp = _otpController.text;
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+    _otpError = _validateOtp(otp);
+    _passwordError = _validatePassword(password);
+    _confirmPasswordError = _validateConfirmPassword(confirmPassword, password);
+    setState(() {});
+    return _otpError == null &&
+        _passwordError == null &&
+        _confirmPasswordError == null;
+  }
+
+  String? _validateOtp(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter the OTP';
+    }
+    if (!RegExp(r'^\d{6}$').hasMatch(value)) {
+      return 'OTP must be 6 digits';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your new password';
+    }
+    if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$')
+        .hasMatch(value)) {
+      return 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character';
+    }
+    return null;
+  }
+
+  String? _validateConfirmPassword(String? value, String password) {
+    if (value == null || value.isEmpty) {
+      return 'Please confirm your password';
+    }
+    if (value != password) {
+      return 'Passwords do not match';
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,7 +138,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   _buildHeader(),
                   const SizedBox(height: 40),
                   _buildResetForm(),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 12),
                   _buildResetButton(),
                 ],
               ),
@@ -148,16 +194,25 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           label: 'OTP',
           icon: Icons.pin_outlined,
           keyboardType: TextInputType.number,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter the OTP';
+          onChanged: (value) {
+            if (_showErrors) {
+              final error = _validateOtp(value);
+              if (_otpError != error) setState(() => _otpError = error);
             }
-            if (!RegExp(r'^\d{6}$').hasMatch(value)) {
-              return 'OTP must be 6 digits';
-            }
-            return null;
           },
         ),
+        if (_showErrors && _otpError != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0, left: 4.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _otpError!,
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.error, fontSize: 12),
+              ),
+            ),
+          ),
         const SizedBox(height: 16),
         _buildInputField(
           controller: _passwordController,
@@ -167,18 +222,27 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           obscureText: _obscurePassword,
           onToggleVisibility: () =>
               setState(() => _obscurePassword = !_obscurePassword),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter your new password';
+          onChanged: (value) {
+            if (_showErrors) {
+              final error = _validatePassword(value);
+              if (_passwordError != error) {
+                setState(() => _passwordError = error);
+              }
             }
-            if (!RegExp(
-                    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$')
-                .hasMatch(value)) {
-              return 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character';
-            }
-            return null;
           },
         ),
+        if (_showErrors && _passwordError != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0, left: 4.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _passwordError!,
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.error, fontSize: 12),
+              ),
+            ),
+          ),
         const SizedBox(height: 16),
         _buildInputField(
           controller: _confirmPasswordController,
@@ -188,16 +252,28 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           obscureText: _obscureConfirmPassword,
           onToggleVisibility: () => setState(
               () => _obscureConfirmPassword = !_obscureConfirmPassword),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please confirm your password';
+          onChanged: (value) {
+            if (_showErrors) {
+              final error =
+                  _validateConfirmPassword(value, _passwordController.text);
+              if (_confirmPasswordError != error) {
+                setState(() => _confirmPasswordError = error);
+              }
             }
-            if (value != _passwordController.text) {
-              return 'Passwords do not match';
-            }
-            return null;
           },
         ),
+        if (_showErrors && _confirmPasswordError != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0, left: 4.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _confirmPasswordError!,
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.error, fontSize: 12),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -210,45 +286,51 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     bool isPassword = false,
     bool? obscureText,
     VoidCallback? onToggleVisibility,
-    String? Function(String?)? validator,
+    ValueChanged<String>? onChanged,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Theme.of(context).dividerColor),
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Theme.of(context).dividerColor),
+      ),
+      child: TextFormField(
+        controller: controller,
+        obscureText: isPassword ? (obscureText ?? true) : false,
+        keyboardType: keyboardType,
+        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+        onChanged: onChanged,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle:
+              TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
+          prefixIcon: Icon(icon, color: Theme.of(context).primaryColor),
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    obscureText! ? Icons.visibility_off : Icons.visibility,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  onPressed: onToggleVisibility,
+                )
+              : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: Theme.of(context).dividerColor),
           ),
-          child: TextFormField(
-            controller: controller,
-            obscureText: isPassword ? (obscureText ?? true) : false,
-            keyboardType: keyboardType,
-            style:
-                TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-            decoration: InputDecoration(
-              labelText: label,
-              labelStyle: TextStyle(
-                color: Theme.of(context).textTheme.bodyMedium?.color,
-              ),
-              prefixIcon: Icon(icon, color: Theme.of(context).primaryColor),
-              suffixIcon: isPassword
-                  ? IconButton(
-                      icon: Icon(
-                        obscureText! ? Icons.visibility_off : Icons.visibility,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                      onPressed: onToggleVisibility,
-                    )
-                  : null,
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.all(16),
-            ),
-            validator: validator,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: Theme.of(context).dividerColor),
           ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide:
+                BorderSide(color: Theme.of(context).primaryColor, width: 2),
+          ),
+          contentPadding: const EdgeInsets.all(16),
+          errorText: null,
         ),
-      ],
+      ),
     );
   }
 

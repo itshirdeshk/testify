@@ -665,7 +665,17 @@ class TestScreenMainState extends State<TestScreenMain> {
           if (onSeeAll != null)
             TextButton(
               onPressed: onSeeAll,
-              child: const Text('See All'),
+              style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).primaryColor,
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(0, 0)),
+              child: const Row(
+                children: [
+                  Text('See All'),
+                  SizedBox(width: 4),
+                  Icon(Icons.arrow_forward_ios, size: 12),
+                ],
+              ),
             ),
         ],
       ),

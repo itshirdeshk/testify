@@ -10,9 +10,14 @@ import 'views/about_us/about_us_screen.dart';
 import 'views/privacy_policy/privacy_policy_screen.dart';
 import 'views/terms/terms_screen.dart';
 import 'custom/widgets/base_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(
     MultiProvider(
       providers: [

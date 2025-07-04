@@ -17,6 +17,15 @@ class _SignupScreenState extends State<SignupScreen> {
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _confirmPasswordFocusNode = FocusNode();
   bool _isAnyFieldFocused = false; // Track if any field is focused
+  bool _isLoading = false;
+  bool _obscurePassword1 = true;
+  bool _obscurePassword2 = true;
+  bool _showErrors = false;
+  String? _nameError;
+  String? _emailError;
+  String? _phoneError;
+  String? _passwordError;
+  String? _confirmPasswordError;
 
   @override
   void initState() {
@@ -45,10 +54,6 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
-  bool _isLoading = false;
-  bool _obscurePassword1 = true;
-  bool _obscurePassword2 = true;
-
   void _onFocusChange() {
     setState(() {
       _isAnyFieldFocused = _nameFocusNode.hasFocus ||
@@ -60,7 +65,9 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Future<void> _handleSignup() async {
-    if (_formKey.currentState!.validate()) {
+    setState(() => _showErrors = true);
+    final isValid = _validateFields();
+    if (isValid) {
       setState(() => _isLoading = true);
       try {
         await _authController.register(context);
@@ -68,6 +75,73 @@ class _SignupScreenState extends State<SignupScreen> {
         if (mounted) setState(() => _isLoading = false);
       }
     }
+  }
+
+  bool _validateFields() {
+    final name = _authController.nameController.text;
+    final email = _authController.emailController.text;
+    final phone = _authController.phoneController.text;
+    final password = _authController.passwordController.text;
+    final confirmPassword = _authController.confirmPasswordController.text;
+    _nameError = _validateName(name);
+    _emailError = _validateEmail(email);
+    _phoneError = _validatePhone(phone);
+    _passwordError = _validatePassword(password);
+    _confirmPasswordError = _validateConfirmPassword(confirmPassword, password);
+    setState(() {});
+    return _nameError == null &&
+        _emailError == null &&
+        _phoneError == null &&
+        _passwordError == null &&
+        _confirmPasswordError == null;
+  }
+
+  String? _validateName(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your full name';
+    }
+    return null;
+  }
+
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your email';
+    }
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+      return 'Please enter a valid email address';
+    }
+    return null;
+  }
+
+  String? _validatePhone(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your phone number';
+    }
+    if (!RegExp(r'^\d{10}$').hasMatch(value)) {
+      return 'Phone number must be 10 digits';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your password';
+    }
+    if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$')
+        .hasMatch(value)) {
+      return 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character';
+    }
+    return null;
+  }
+
+  String? _validateConfirmPassword(String? value, String password) {
+    if (value == null || value.isEmpty) {
+      return 'Please confirm your password';
+    }
+    if (value != password) {
+      return 'Passwords do not match';
+    }
+    return null;
   }
 
   void _unfocusAllFields() {
@@ -98,7 +172,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     _buildHeader(),
                     const SizedBox(height: 40),
                     _buildSignupForm(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 12),
                     _buildActionButtons(context),
                   ],
                 ),
@@ -155,13 +229,25 @@ class _SignupScreenState extends State<SignupScreen> {
           label: 'Full Name',
           icon: Icons.person_outline,
           focusNode: _nameFocusNode,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter your full name';
+          onChanged: (value) {
+            if (_showErrors) {
+              final error = _validateName(value);
+              if (_nameError != error) setState(() => _nameError = error);
             }
-            return null;
           },
         ),
+        if (_showErrors && _nameError != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0, left: 4.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _nameError!,
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.error, fontSize: 12),
+              ),
+            ),
+          ),
         const SizedBox(height: 16),
         _buildInputField(
           controller: _authController.emailController,
@@ -169,16 +255,25 @@ class _SignupScreenState extends State<SignupScreen> {
           icon: Icons.email_outlined,
           keyboardType: TextInputType.emailAddress,
           focusNode: _emailFocusNode,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter your email';
+          onChanged: (value) {
+            if (_showErrors) {
+              final error = _validateEmail(value);
+              if (_emailError != error) setState(() => _emailError = error);
             }
-            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-              return 'Please enter a valid email address';
-            }
-            return null;
           },
         ),
+        if (_showErrors && _emailError != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0, left: 4.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _emailError!,
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.error, fontSize: 12),
+              ),
+            ),
+          ),
         const SizedBox(height: 16),
         _buildInputField(
           controller: _authController.phoneController,
@@ -186,16 +281,25 @@ class _SignupScreenState extends State<SignupScreen> {
           icon: Icons.phone_outlined,
           keyboardType: TextInputType.phone,
           focusNode: _phoneFocusNode,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter your phone number';
+          onChanged: (value) {
+            if (_showErrors) {
+              final error = _validatePhone(value);
+              if (_phoneError != error) setState(() => _phoneError = error);
             }
-            if (!RegExp(r'^\d{10}$').hasMatch(value)) {
-              return 'Phone number must be 10 digits';
-            }
-            return null;
           },
         ),
+        if (_showErrors && _phoneError != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0, left: 4.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _phoneError!,
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.error, fontSize: 12),
+              ),
+            ),
+          ),
         const SizedBox(height: 16),
         _buildInputField(
           controller: _authController.passwordController,
@@ -207,18 +311,27 @@ class _SignupScreenState extends State<SignupScreen> {
           onToggleVisibility: () {
             setState(() => _obscurePassword1 = !_obscurePassword1);
           },
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter your password';
+          onChanged: (value) {
+            if (_showErrors) {
+              final error = _validatePassword(value);
+              if (_passwordError != error) {
+                setState(() => _passwordError = error);
+              }
             }
-            if (!RegExp(
-                    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$')
-                .hasMatch(value)) {
-              return 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character';
-            }
-            return null;
           },
         ),
+        if (_showErrors && _passwordError != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0, left: 4.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _passwordError!,
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.error, fontSize: 12),
+              ),
+            ),
+          ),
         const SizedBox(height: 16),
         _buildInputField(
           controller: _authController.confirmPasswordController,
@@ -230,16 +343,28 @@ class _SignupScreenState extends State<SignupScreen> {
           onToggleVisibility: () {
             setState(() => _obscurePassword2 = !_obscurePassword2);
           },
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please confirm your password';
+          onChanged: (value) {
+            if (_showErrors) {
+              final error = _validateConfirmPassword(
+                  value, _authController.passwordController.text);
+              if (_confirmPasswordError != error) {
+                setState(() => _confirmPasswordError = error);
+              }
             }
-            if (value != _authController.passwordController.text) {
-              return 'Passwords do not match';
-            }
-            return null;
           },
         ),
+        if (_showErrors && _confirmPasswordError != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0, left: 4.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _confirmPasswordError!,
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.error, fontSize: 12),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -252,45 +377,53 @@ class _SignupScreenState extends State<SignupScreen> {
     bool isPassword = false,
     bool? obscureText,
     VoidCallback? onToggleVisibility,
-    String? Function(String?)? validator,
     FocusNode? focusNode,
+    ValueChanged<String>? onChanged,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Theme.of(context).dividerColor),
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Theme.of(context).dividerColor),
+      ),
+      child: TextFormField(
+        controller: controller,
+        obscureText: isPassword ? (obscureText ?? true) : false,
+        keyboardType: keyboardType,
+        focusNode: focusNode,
+        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+        onChanged: onChanged,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle:
+              TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
+          prefixIcon: Icon(icon, color: Theme.of(context).primaryColor),
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    obscureText! ? Icons.visibility_off : Icons.visibility,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  onPressed: onToggleVisibility,
+                )
+              : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: Theme.of(context).dividerColor),
           ),
-          child: TextFormField(
-            controller: controller,
-            obscureText: isPassword ? (obscureText ?? true) : false,
-            keyboardType: keyboardType,
-            focusNode: focusNode,
-            style:
-                TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-            decoration: InputDecoration(
-              labelText: label,
-              labelStyle: TextStyle(
-                  color: Theme.of(context).textTheme.bodyMedium?.color),
-              prefixIcon: Icon(icon, color: Theme.of(context).primaryColor),
-              suffixIcon: isPassword
-                  ? IconButton(
-                      icon: Icon(
-                        obscureText! ? Icons.visibility_off : Icons.visibility,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                      onPressed: onToggleVisibility,
-                    )
-                  : null,
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.all(16),
-            ),
-            validator: validator,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: Theme.of(context).dividerColor),
           ),
-        )],);
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide:
+                BorderSide(color: Theme.of(context).primaryColor, width: 2),
+          ),
+          contentPadding: const EdgeInsets.all(16),
+        ),
+      ),
+    );
   }
 
   Widget _buildActionButtons(BuildContext context) {
@@ -304,7 +437,7 @@ class _SignupScreenState extends State<SignupScreen> {
               backgroundColor: Theme.of(context).primaryColor,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
               elevation: 0,
             ),
@@ -326,9 +459,11 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(
+          height: 5,
+        ),
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Text(
               "Already have an account? ",
@@ -337,6 +472,8 @@ class _SignupScreenState extends State<SignupScreen> {
               ),
             ),
             TextButton(
+              style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero, minimumSize: const Size(0, 0)),
               onPressed: () => Navigator.pushNamed(context, '/login'),
               child: Text(
                 'Login',

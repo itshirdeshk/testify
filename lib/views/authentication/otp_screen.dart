@@ -102,7 +102,7 @@ class _OtpScreenState extends State<OtpScreen> {
                   _buildHeader(),
                   const SizedBox(height: 40),
                   _buildOtpFields(),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 12),
                   _buildActionButtons(),
                 ],
               ),

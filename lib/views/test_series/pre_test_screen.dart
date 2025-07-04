@@ -392,11 +392,16 @@ class PreTestScreenState extends State<PreTestScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Premium Test'),
+        title: const Text(
+          'Premium Test',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         content: const Text(
             'This is a premium test. Contact Support to access it.\n\nUpgrade to premium for exclusive access to all premium tests and features!'),
         actions: [
           TextButton(
+            style: TextButton.styleFrom(
+                padding: EdgeInsets.zero, minimumSize: const Size(0, 0)),
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Close'),
           ),

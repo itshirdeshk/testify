@@ -15,13 +15,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final GlobalKey<FormState> _formKey =
       GlobalKey<FormState>(); // Form key for validation
   bool _isLoading = false;
+  bool _showErrors = false;
+  String? _emailError;
 
   Future<void> _handleSendEmail() async {
-    if (!_formKey.currentState!.validate()) {
-      // If validation fails, return
-      return;
-    }
-
+    setState(() => _showErrors = true);
+    final isValid = _validateField();
+    if (!isValid) return;
     setState(() => _isLoading = true);
     final AuthService authService = AuthService();
     try {
@@ -57,6 +57,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
   }
 
+  bool _validateField() {
+    final email = _emailController.text;
+    _emailError = _validateEmail(email);
+    setState(() {});
+    return _emailError == null;
+  }
+
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your email';
+    }
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+      return 'Please enter a valid email address';
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,7 +98,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   _buildHeader(),
                   const SizedBox(height: 40),
                   _buildEmailField(),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 12),
                   _buildSendButton(),
                 ],
               ),
@@ -136,7 +153,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         Container(
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Theme.of(context).dividerColor),
           ),
           child: TextFormField(
@@ -144,6 +161,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             keyboardType: TextInputType.emailAddress,
             style:
                 TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+            onChanged: (value) {
+              if (_showErrors) {
+                final error = _validateEmail(value);
+                if (_emailError != error) setState(() => _emailError = error);
+              }
+            },
             decoration: InputDecoration(
               labelText: 'Email',
               labelStyle: TextStyle(
@@ -153,21 +176,36 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 Icons.email_outlined,
                 color: Theme.of(context).primaryColor,
               ),
-              border: InputBorder.none,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: Theme.of(context).dividerColor),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: Theme.of(context).dividerColor),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide:
+                    BorderSide(color: Theme.of(context).primaryColor, width: 2),
+              ),
               contentPadding: const EdgeInsets.all(16),
+              errorText: null,
             ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your email';
-              }
-              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                  .hasMatch(value)) {
-                return 'Please enter a valid email address';
-              }
-              return null;
-            },
           ),
         ),
+        if (_showErrors && _emailError != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0, left: 4.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _emailError!,
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.error, fontSize: 12),
+              ),
+            ),
+          ),
       ],
     );
   }

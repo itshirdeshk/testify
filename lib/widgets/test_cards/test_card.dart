@@ -246,7 +246,7 @@ class TestCard extends StatelessWidget {
 
   Widget _buildUnlockButton(BuildContext context) {
     return TextButton(
-      onPressed: () {},
+      onPressed: onStart,
       style: TextButton.styleFrom(
         foregroundColor: Theme.of(context).primaryColor,
       ),

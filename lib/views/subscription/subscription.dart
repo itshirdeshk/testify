@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/user_provider.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
@@ -49,11 +51,53 @@ class SubscriptionScreenState extends State<SubscriptionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final isPremium = userProvider.user?.premium ?? false;
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
+      child: ListView(padding: const EdgeInsets.all(16), children: [
+        if (isPremium) ...[
+          Card(
+            color: const Color(0xFFFFF8E1),
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.workspace_premium,
+                      color: Colors.amber[800], size: 28),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'You are a Premium User!',
+                        style: TextStyle(
+                          color: Colors.amber[900],
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Enjoy unlimited access to all premium features, tests, and exclusive content.\nThank you for supporting your learning journey with us!',
+                        style: TextStyle(
+                          color: Colors.brown,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+        ] else ...[
           Text(
             'Choose Your Plan',
             style: TextStyle(
@@ -218,7 +262,7 @@ class SubscriptionScreenState extends State<SubscriptionScreen> {
             );
           }),
         ],
-      ),
+      ]),
     );
   }
 }

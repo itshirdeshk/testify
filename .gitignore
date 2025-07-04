@@ -43,3 +43,4 @@ app.*.map.json
 /android/app/release
 .vscode
 devtools_options.yaml
+google-services.json

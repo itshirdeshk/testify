@@ -128,8 +128,9 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             TextButton(
               onPressed: onSeeAll,
               style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).primaryColor,
-              ),
+                  foregroundColor: Theme.of(context).primaryColor,
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(0, 0)),
               child: const Row(
                 children: [
                   Text('See All'),
