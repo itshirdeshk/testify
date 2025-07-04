@@ -7,6 +7,7 @@ import 'package:testify/utils/custom_dio.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:testify/services/notification_service.dart';
 
 class AuthService {
   late Dio _dio;
@@ -40,8 +41,10 @@ class AuthService {
     }
   }
 
-  Future<Response> login(LoginCredentials credentials, BuildContext context) async {
-    final response = await _makePostRequest('/user/login', credentials.toJson(), context);
+  Future<Response> login(
+      LoginCredentials credentials, BuildContext context) async {
+    final response =
+        await _makePostRequest('/user/login', credentials.toJson(), context);
 
     if (response.statusCode == 200) {
       final token = response.data['token'];
@@ -64,13 +67,15 @@ class AuthService {
 
       if (context.mounted) {
         Provider.of<UserProvider>(context, listen: false).setUser(user);
+        await NotificationService.instance.sendTokenIfNeeded();
       }
     }
     return response;
   }
 
   Future<Response> register(RegistrationData data, BuildContext context) async {
-    final response = await _makePostRequest('/user/register', data.toJson(), context);
+    final response =
+        await _makePostRequest('/user/register', data.toJson(), context);
 
     if (response.statusCode == 201) {
       final token = response.data['token'];
@@ -97,19 +102,25 @@ class AuthService {
     return _makePostRequest('/user/verify/otp', otpData.toJson(), context);
   }
 
-  Future<Response> sendResetPasswordEmail(String email, BuildContext context) async {
-    return _makePostRequest('/user/send-reset-password-email', {'email': email}, context);
+  Future<Response> sendResetPasswordEmail(
+      String email, BuildContext context) async {
+    return _makePostRequest(
+        '/user/send-reset-password-email', {'email': email}, context);
   }
 
   Future<Response> sendOtpAgain(String email, BuildContext context) async {
     return _makePostRequest('/user/send-otp-again', {'email': email}, context);
   }
 
-  Future<Response> resetPassword(ResetPasswordData resetData, BuildContext context) async {
-    return _makePostRequest('/user/reset-password', resetData.toJson(), context);
+  Future<Response> resetPassword(
+      ResetPasswordData resetData, BuildContext context) async {
+    return _makePostRequest(
+        '/user/reset-password', resetData.toJson(), context);
   }
 
-  Future<Response> changePassword(ChangePasswordData changeData, BuildContext context) async {
-    return _makePostRequest('/user/changePassword', changeData.toJson(), context);
+  Future<Response> changePassword(
+      ChangePasswordData changeData, BuildContext context) async {
+    return _makePostRequest(
+        '/user/changePassword', changeData.toJson(), context);
   }
 }
