@@ -130,7 +130,7 @@ class NotificationService {
     try {
       final dio = Dio();
       await dio.post(
-        '$baseUrl/user/save-device-token ',
+        '$baseUrl/user/save-device-token',
         data: {'deviceToken': token},
         options: Options(headers: {'Authorization': 'Bearer $jwt'}),
       );
