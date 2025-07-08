@@ -49,7 +49,7 @@ class AppTheme {
         foregroundColor: Colors.white,
         backgroundColor: primaryColor,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(16),
         ),
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
       ),
@@ -69,11 +69,11 @@ class AppTheme {
       fillColor: Colors.white,
       enabledBorder: OutlineInputBorder(
         borderSide: const BorderSide(color: secondaryColor, width: 1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
       ),
       focusedBorder: OutlineInputBorder(
         borderSide: const BorderSide(color: primaryColor, width: 2),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
       ),
       labelStyle: const TextStyle(
         color: lightTextColor,
@@ -114,7 +114,7 @@ class AppTheme {
         foregroundColor: darkTextColor,
         backgroundColor: darkPrimaryColor,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(16),
         ),
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
       ),
@@ -134,11 +134,11 @@ class AppTheme {
       fillColor: darkCardColor,
       enabledBorder: OutlineInputBorder(
         borderSide: const BorderSide(color: darkSecondaryColor, width: 1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
       ),
       focusedBorder: OutlineInputBorder(
         borderSide: const BorderSide(color: darkPrimaryColor, width: 2),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
       ),
       labelStyle: const TextStyle(
         color: darkLightTextColor,

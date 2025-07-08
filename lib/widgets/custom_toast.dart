@@ -13,18 +13,18 @@ class CustomToast {
         left: 16,
         right: 16,
         child: Material(
-          color: Colors.transparent,
+          color: Colors.white,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: isError
-                  ? Theme.of(context).colorScheme.error.withValues(alpha: 0.1)
-                  : Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                  ? Theme.of(context).colorScheme.error.withValues(alpha: 0.3)
+                  : Theme.of(context).primaryColor.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isError
-                    ? Theme.of(context).colorScheme.error.withValues(alpha: 0.3)
-                    : Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                    ? Theme.of(context).colorScheme.error.withValues(alpha: 0.5)
+                    : Theme.of(context).primaryColor.withValues(alpha: 0.5),
               ),
               boxShadow: [
                 BoxShadow(

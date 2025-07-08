@@ -289,11 +289,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     ValueChanged<String>? onChanged,
   }) {
     return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).dividerColor),
-      ),
+      color: Theme.of(context).cardColor,
       child: TextFormField(
         controller: controller,
         obscureText: isPassword ? (obscureText ?? true) : false,

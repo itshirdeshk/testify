@@ -267,7 +267,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 6),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
@@ -300,11 +300,8 @@ class _LoginScreenState extends State<LoginScreen> {
     ValueChanged<String>? onChanged,
   }) {
     return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).dividerColor),
-      ),
+      color: Theme.of(context)
+          .cardColor, // Only background color, no border or radius
       child: TextFormField(
         controller: controller,
         obscureText: isPassword ? (obscureText ?? true) : false,
@@ -339,8 +336,9 @@ class _LoginScreenState extends State<LoginScreen> {
             borderSide:
                 BorderSide(color: Theme.of(context).primaryColor, width: 2),
           ),
-          contentPadding: const EdgeInsets.all(16),
-          errorText: null, // Remove inline error
+          contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+          floatingLabelBehavior: FloatingLabelBehavior.auto,
+          errorText: null,
         ),
       ),
     );
