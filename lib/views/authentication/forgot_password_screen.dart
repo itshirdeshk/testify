@@ -87,12 +87,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.arrow_back,
-                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: InkWell(
+                      onTap: () => Navigator.pop(context),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Icon(
+                        Icons.arrow_back,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
                     ),
-                    onPressed: () => Navigator.pop(context),
                   ),
                   const SizedBox(height: 40),
                   _buildHeader(),
@@ -151,7 +155,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-         color: Theme.of(context).cardColor,
+          color: Theme.of(context).cardColor,
           child: TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,

@@ -88,7 +88,7 @@ class AuthService {
         name: userData['name'],
         email: userData['email'],
         phone: userData['phone'].toString(),
-        premium: userData['premium'],
+        premium: userData['isPremium'],
       );
 
       if (context.mounted) {

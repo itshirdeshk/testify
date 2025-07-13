@@ -16,7 +16,6 @@ class _SignupScreenState extends State<SignupScreen> {
   final FocusNode _phoneFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _confirmPasswordFocusNode = FocusNode();
-  bool _isAnyFieldFocused = false; // Track if any field is focused
   bool _isLoading = false;
   bool _obscurePassword1 = true;
   bool _obscurePassword2 = true;
@@ -26,42 +25,20 @@ class _SignupScreenState extends State<SignupScreen> {
   String? _phoneError;
   String? _passwordError;
   String? _confirmPasswordError;
-
   @override
   void initState() {
     super.initState();
-    // Add listeners to focus nodes
-    _nameFocusNode.addListener(_onFocusChange);
-    _emailFocusNode.addListener(_onFocusChange);
-    _phoneFocusNode.addListener(_onFocusChange);
-    _passwordFocusNode.addListener(_onFocusChange);
-    _confirmPasswordFocusNode.addListener(_onFocusChange);
   }
 
   @override
   void dispose() {
     // Clean up focus nodes
-    _nameFocusNode.removeListener(_onFocusChange);
-    _emailFocusNode.removeListener(_onFocusChange);
-    _phoneFocusNode.removeListener(_onFocusChange);
-    _passwordFocusNode.removeListener(_onFocusChange);
-    _confirmPasswordFocusNode.removeListener(_onFocusChange);
     _nameFocusNode.dispose();
     _emailFocusNode.dispose();
     _phoneFocusNode.dispose();
     _passwordFocusNode.dispose();
     _confirmPasswordFocusNode.dispose();
     super.dispose();
-  }
-
-  void _onFocusChange() {
-    setState(() {
-      _isAnyFieldFocused = _nameFocusNode.hasFocus ||
-          _emailFocusNode.hasFocus ||
-          _phoneFocusNode.hasFocus ||
-          _passwordFocusNode.hasFocus ||
-          _confirmPasswordFocusNode.hasFocus;
-    });
   }
 
   Future<void> _handleSignup() async {
@@ -470,7 +447,8 @@ class _SignupScreenState extends State<SignupScreen> {
             TextButton(
               style: TextButton.styleFrom(
                   padding: EdgeInsets.zero, minimumSize: const Size(0, 0)),
-              onPressed: () => Navigator.pushNamed(context, '/login'),
+              onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                  context, '/login', (route) => false),
               child: Text(
                 'Login',
                 style: TextStyle(

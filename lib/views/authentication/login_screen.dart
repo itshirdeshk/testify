@@ -16,39 +16,22 @@ class _LoginScreenState extends State<LoginScreen> {
   final FocusNode _passwordFocusNode = FocusNode();
   bool _isLoading = false;
   bool _obscurePassword = true;
-  bool _isAnyFieldFocused = false; // Track if any field is focused
   bool _showErrors = false; // Show errors only after login attempt
   String? _emailError;
   String? _phoneError;
   String? _passwordError;
-
   @override
   void initState() {
     super.initState();
-    // Add listeners to focus nodes
-    _emailFocusNode.addListener(_onFocusChange);
-    _phoneFocusNode.addListener(_onFocusChange);
-    _passwordFocusNode.addListener(_onFocusChange);
   }
 
   @override
   void dispose() {
     // Clean up focus nodes
-    _emailFocusNode.removeListener(_onFocusChange);
-    _phoneFocusNode.removeListener(_onFocusChange);
-    _passwordFocusNode.removeListener(_onFocusChange);
     _emailFocusNode.dispose();
     _phoneFocusNode.dispose();
     _passwordFocusNode.dispose();
     super.dispose();
-  }
-
-  void _onFocusChange() {
-    setState(() {
-      _isAnyFieldFocused = _emailFocusNode.hasFocus ||
-          _phoneFocusNode.hasFocus ||
-          _passwordFocusNode.hasFocus;
-    });
   }
 
   Future<void> _handleLogin() async {

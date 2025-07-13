@@ -20,7 +20,9 @@ class NotificationService {
     if (_initialized) return;
     await _requestPermission(context);
     await _setupFlutterNotifications();
-    await _setupMessageHandlers(context);
+    if (context.mounted) {
+      await _setupMessageHandlers(context);
+    }
     await _sendTokenToBackend();
     _initialized = true;
   }

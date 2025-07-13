@@ -17,8 +17,6 @@ class AuthController {
   final List<TextEditingController> otpControllers =
       List.generate(6, (index) => TextEditingController());
 
-  
-
   Future<bool> login(BuildContext context) async {
     final AuthService authService = AuthService();
     try {
@@ -31,8 +29,29 @@ class AuthController {
           context: context,
           message: 'Login Successful',
         );
-        Navigator.pushNamed(context, '/otp',
-            arguments: {"email": emailController.text, "screen": false});
+
+        if (response.data['user']['isUserVerified'] == true) {
+          final userProvider =
+              Provider.of<UserProvider>(context, listen: false);
+          final examId = userProvider.user?.examId;
+
+          // Navigate based on examId
+          if (examId == '') {
+            Navigator.pushNamed(
+              context,
+              '/exam',
+            );
+          } else {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/base_screen',
+              (route) => false,
+            );
+          }
+        } else {
+          Navigator.pushNamed(context, '/otp',
+              arguments: {"email": emailController.text, "screen": false});
+        }
         return true;
       } else {
         if (context.mounted) {
@@ -69,15 +88,16 @@ class AuthController {
         Navigator.pushNamed(context, '/otp',
             arguments: {"email": emailController.text, "screen": true});
         return true;
+      } else {
+        if (context.mounted) {
+          CustomToast.show(
+            context: context,
+            message: response.data['message'],
+            isError: true,
+          );
+        }
+        return false;
       }
-      if (context.mounted) {
-        CustomToast.show(
-          context: context,
-          message: response.data['message'],
-          isError: true,
-        );
-      }
-      return false;
     } catch (e) {
       return false;
     }
@@ -85,7 +105,7 @@ class AuthController {
 
   Future<bool> verifyOtp(
       BuildContext context, String email, bool screen) async {
-        final AuthService authService = AuthService();
+    final AuthService authService = AuthService();
     try {
       String otp = otpControllers.map((controller) => controller.text).join();
       final response =
@@ -99,10 +119,9 @@ class AuthController {
 
         // If screen is true, directly go to exam screen
         if (screen) {
-          Navigator.pushNamedAndRemoveUntil(
+          Navigator.pushNamed(
             context,
             '/exam',
-            (route) => false,
           );
           return true;
         }
@@ -112,11 +131,18 @@ class AuthController {
         final examId = userProvider.user?.examId;
 
         // Navigate based on examId
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          examId == '' ? '/exam' : '/base_screen',
-          (route) => false,
-        );
+        if (examId == '') {
+          Navigator.pushNamed(
+            context,
+            '/exam',
+          );
+        } else {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/base_screen',
+            (route) => false,
+          );
+        }
         return true;
       }
       if (context.mounted) {
