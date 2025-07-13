@@ -101,8 +101,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildAccountSettings(context),
               const SizedBox(height: 24),
               _buildAppSettings(context),
-              const SizedBox(height: 24),
-              _buildSupportSection(context),
+              // const SizedBox(height: 24),
+              // _buildSupportSection(context),
               const SizedBox(height: 24),
               _buildLogoutButton(context),
             ],
@@ -210,13 +210,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        _buildSettingsOption(
-          context,
-          icon: Icons.notifications_outlined,
-          title: 'Notifications',
-          subtitle: 'Manage your notifications',
-          onTap: () {},
-        ),
+        // _buildSettingsOption(
+        //   context,
+        //   icon: Icons.notifications_outlined,
+        //   title: 'Notifications',
+        //   subtitle: 'Manage your notifications',
+        //   onTap: () {},
+        // ),
         Consumer<ThemeProvider>(
           builder: (context, themeProvider, child) {
             return _buildSettingsOption(
@@ -238,39 +238,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildSupportSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            'Support',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        _buildSettingsOption(
-          context,
-          icon: Icons.help_outline,
-          title: 'Help & Support',
-          subtitle: 'Get help with the app',
-          onTap: () {},
-        ),
-        _buildSettingsOption(
-          context,
-          icon: Icons.info_outline,
-          title: 'About',
-          subtitle: 'Learn more about Testify',
-          onTap: () {},
-        ),
-      ],
-    );
-  }
+  // Widget _buildSupportSection(BuildContext context) {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       Padding(
+  //         padding: const EdgeInsets.symmetric(horizontal: 20),
+  //         child: Text(
+  //           'Support',
+  //           style: TextStyle(
+  //             fontSize: 20,
+  //             fontWeight: FontWeight.bold,
+  //             color: Theme.of(context).textTheme.bodyLarge?.color,
+  //           ),
+  //         ),
+  //       ),
+  //       const SizedBox(height: 12),
+  //       _buildSettingsOption(
+  //         context,
+  //         icon: Icons.help_outline,
+  //         title: 'Help & Support',
+  //         subtitle: 'Get help with the app',
+  //         onTap: () {},
+  //       ),
+  //       _buildSettingsOption(
+  //         context,
+  //         icon: Icons.info_outline,
+  //         title: 'About',
+  //         subtitle: 'Learn more about Testify',
+  //         onTap: () {},
+  //       ),
+  //     ],
+  //   );
+  // }
 
   Widget _buildSettingsOption(
     BuildContext context, {

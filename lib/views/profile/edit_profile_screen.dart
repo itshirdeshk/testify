@@ -265,11 +265,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     TextInputType? keyboardType,
   }) {
     return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).dividerColor),
-      ),
+      color: Theme.of(context).cardColor,
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,

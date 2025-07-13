@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:testify/services/notification_service.dart';
+import 'package:flutter/foundation.dart';
 
 class AuthService {
   late Dio _dio;
@@ -67,7 +68,17 @@ class AuthService {
 
       if (context.mounted) {
         Provider.of<UserProvider>(context, listen: false).setUser(user);
-        await NotificationService.instance.sendTokenIfNeeded();
+
+        // Use a post-frame callback to ensure Flutter framework is ready
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          try {
+            await NotificationService.instance.sendTokenIfNeeded();
+          } catch (e) {
+            if (kDebugMode) {
+              print("Error sending notification token: $e");
+            }
+          }
+        });
       }
     }
     return response;

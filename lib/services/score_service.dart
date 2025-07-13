@@ -88,7 +88,7 @@ class ScoreService {
       throw Exception('Failed to fetch leaderboard');
     } catch (e) {
       if (kDebugMode) {
-        print('API Error: $e');
+        print('API Error Leaderboard: $e');
       }
       throw Exception('Error fetching leaderboard: $e');
     }

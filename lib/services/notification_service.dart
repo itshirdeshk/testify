@@ -15,16 +15,34 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
   bool _initialized = false;
-
   Future<void> initialize(BuildContext context) async {
     if (_initialized) return;
-    await _requestPermission(context);
-    await _setupFlutterNotifications();
-    if (context.mounted) {
-      await _setupMessageHandlers(context);
+
+    try {
+      await _requestPermission(context);
+      await _setupFlutterNotifications();
+
+      // Use post-frame callback to ensure context is ready
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (context.mounted) {
+          try {
+            await _setupMessageHandlers(context);
+          } catch (e) {
+            if (kDebugMode) {
+              print('Error setting up message handlers: $e');
+            }
+          }
+        }
+      });
+
+      await _sendTokenToBackend();
+      _initialized = true;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error initializing notification service: $e');
+      }
+      // Don't mark as initialized if there was an error
     }
-    await _sendTokenToBackend();
-    _initialized = true;
   }
 
   Future<void> _requestPermission(BuildContext context) async {
@@ -35,22 +53,32 @@ class NotificationService {
       provisional: false,
     );
     if (settings.authorizationStatus == AuthorizationStatus.denied) {
-      if (context.mounted) {
-        showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Permission Required'),
-            content: const Text(
-                'Notification permission is required to receive important updates. Please enable it in app settings.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('OK'),
+      // Use a post-frame callback to ensure Material context is ready
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          try {
+            showDialog(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('Permission Required'),
+                content: const Text(
+                    'Notification permission is required to receive important updates. Please enable it in app settings.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    child: const Text('OK'),
+                  ),
+                ],
               ),
-            ],
-          ),
-        );
-      }
+            );
+          } catch (e) {
+            // If dialog fails, just log the error instead of crashing
+            if (kDebugMode) {
+              print('Could not show permission dialog: $e');
+            }
+          }
+        }
+      });
     }
   }
 

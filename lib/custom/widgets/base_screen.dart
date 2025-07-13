@@ -191,9 +191,9 @@ class _BaseScreenState extends State<BaseScreen> {
               onTap: () => Navigator.pushNamed(context, '/settings'),
             ),
             _buildDrawerItem(
-              icon: Icons.help_outline,
-              title: 'Help & Support',
-              onTap: () {},
+              icon: Icons.info_outline,
+              title: 'About Us',
+              onTap: () => Navigator.pushNamed(context, '/about-us'),
             ),
             _buildDrawerItem(
               icon: Icons.question_answer_outlined,
@@ -201,19 +201,14 @@ class _BaseScreenState extends State<BaseScreen> {
               onTap: () => Navigator.pushNamed(context, '/faq'),
             ),
             _buildDrawerItem(
-              icon: Icons.info_outline,
-              title: 'About Us',
-              onTap: () => Navigator.pushNamed(context, '/about-us'),
+              icon: Icons.article_outlined,
+              title: 'Terms & Conditions',
+              onTap: () => Navigator.pushNamed(context, '/terms'),
             ),
             _buildDrawerItem(
               icon: Icons.privacy_tip_outlined,
               title: 'Privacy Policy',
               onTap: () => Navigator.pushNamed(context, '/privacy-policy'),
-            ),
-            _buildDrawerItem(
-              icon: Icons.article_outlined,
-              title: 'Terms & Conditions',
-              onTap: () => Navigator.pushNamed(context, '/terms'),
             ),
             _buildDrawerItem(
               icon: Icons.exit_to_app,

@@ -5,6 +5,7 @@ import '../models/registration_data.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 import '../widgets/custom_toast.dart';
+import 'package:flutter/foundation.dart';
 
 class AuthController {
   final TextEditingController emailController = TextEditingController();
@@ -41,18 +42,21 @@ class AuthController {
               context,
               '/exam',
             );
+            return true;
           } else {
             Navigator.pushNamedAndRemoveUntil(
               context,
               '/base_screen',
               (route) => false,
             );
+            return true;
           }
         } else {
           Navigator.pushNamed(context, '/otp',
               arguments: {"email": emailController.text, "screen": false});
+
+          return true;
         }
-        return true;
       } else {
         if (context.mounted) {
           CustomToast.show(
@@ -64,6 +68,9 @@ class AuthController {
         return false;
       }
     } catch (e) {
+      if (kDebugMode) {
+        print("Error during login: $e");
+      }
       return false;
     }
   }

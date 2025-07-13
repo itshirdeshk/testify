@@ -17,8 +17,8 @@ class ResourcesScreen extends StatefulWidget {
 
 class _ResourcesScreenState extends State<ResourcesScreen> {
   bool _isLoading = false;
-  bool _isResourceDownloading = false;
   List<Resource> _resources = [];
+  Set<String> downloadingResources = {}; // Track downloading resources by ID
   late final ResourceService _resourceService;
 
   @override
@@ -53,13 +53,14 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
   }
 
   Future<void> downloadAndOpenResource(
-      String url, String title, String type) async {
-    setState(() => _isResourceDownloading = true);
+      String url, String title, String type, String resourceId) async {
+    setState(() => downloadingResources.add(resourceId));
 
     final PermissionManager permissionManager = PermissionManager();
     bool hasPermission =
         await permissionManager.checkAndRequestStoragePermission(context);
     if (!hasPermission) {
+      setState(() => downloadingResources.remove(resourceId));
       if (mounted) {
         CustomToast.show(
           context: context,
@@ -71,11 +72,21 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
     }
 
     if (!mounted) return;
-    final filePath =
-        await _resourceService.downloadResource(url, title, type, context);
-    setState(() => _isResourceDownloading = false);
-
-    OpenFile.open(filePath);
+    try {
+      final filePath =
+          await _resourceService.downloadResource(url, title, type, context);
+      setState(() => downloadingResources.remove(resourceId));
+      OpenFile.open(filePath);
+    } catch (e) {
+      setState(() => downloadingResources.remove(resourceId));
+      if (mounted) {
+        CustomToast.show(
+          context: context,
+          message: 'Download failed',
+          isError: true,
+        );
+      }
+    }
   }
 
   @override
@@ -356,15 +367,19 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
             ),
           ],
         ),
-        trailing: _isResourceDownloading
-            ? const CircularProgressIndicator()
+        trailing: downloadingResources.contains(resource.id)
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
             : IconButton(
                 icon: const Icon(Icons.download_outlined),
                 color: Theme.of(context).primaryColor,
                 onPressed: () {
                   // Implement download logic
                   downloadAndOpenResource(
-                      resource.url, resource.title, resource.type);
+                      resource.url, resource.title, resource.type, resource.id);
                 },
               ),
       ),
