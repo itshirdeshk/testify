@@ -193,7 +193,13 @@ class _OtpScreenState extends State<OtpScreen> {
     return Container(
       width: 45,
       height: 55,
-      color: Theme.of(context).cardColor,
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Theme.of(context).dividerColor,
+        ),
+      ),
       child: TextFormField(
         controller: _authController.otpControllers[index],
         keyboardType: TextInputType.number,
@@ -207,6 +213,7 @@ class _OtpScreenState extends State<OtpScreen> {
         decoration: const InputDecoration(
           counterText: '',
           border: InputBorder.none,
+          contentPadding: EdgeInsets.zero,
         ),
         validator: (value) {
           if (value == null || value.isEmpty) {

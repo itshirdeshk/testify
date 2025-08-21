@@ -264,20 +264,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     required IconData icon,
     TextInputType? keyboardType,
   }) {
-    return Container(
-      color: Theme.of(context).cardColor,
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle:
-              TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
-          prefixIcon: Icon(icon, color: Theme.of(context).primaryColor),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(16),
-        ),
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle:
+            TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
+        prefixIcon: Icon(icon, color: Theme.of(context).primaryColor),
+        border: InputBorder.none,
+        contentPadding: const EdgeInsets.all(16),
+        filled: true,
+        fillColor: Theme.of(context).cardColor,
       ),
     );
   }

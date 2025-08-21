@@ -100,12 +100,16 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.arrow_back,
-                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: InkWell(
+                      onTap: () => Navigator.pop(context),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Icon(
+                        Icons.arrow_back,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
                     ),
-                    onPressed: () => Navigator.pop(context),
                   ),
                   const SizedBox(height: 40),
                   _buildHeader(),
@@ -193,49 +197,47 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          color: Theme.of(context).cardColor,
-          child: TextFormField(
-            controller: controller,
-            obscureText: obscureText,
-            keyboardType: TextInputType.visiblePassword,
-            style:
-                TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-            onChanged: onChanged,
-            decoration: InputDecoration(
-              labelText: title,
-              labelStyle: TextStyle(
-                color: Theme.of(context).textTheme.bodyMedium?.color,
-              ),
-              prefixIcon: Icon(
-                Icons.lock_outline,
-                color: Theme.of(context).primaryColor,
-              ),
-              suffixIcon: onToggleVisibility != null
-                  ? IconButton(
-                      icon: Icon(
-                        obscureText ? Icons.visibility_off : Icons.visibility,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                      onPressed: onToggleVisibility,
-                    )
-                  : null,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(color: Theme.of(context).dividerColor),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(color: Theme.of(context).dividerColor),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide:
-                    BorderSide(color: Theme.of(context).primaryColor, width: 2),
-              ),
-              contentPadding: const EdgeInsets.all(16),
-              errorText: null,
+        TextFormField(
+          controller: controller,
+          obscureText: obscureText,
+          keyboardType: TextInputType.visiblePassword,
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+          onChanged: onChanged,
+          decoration: InputDecoration(
+            labelText: title,
+            labelStyle: TextStyle(
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
+            prefixIcon: Icon(
+              Icons.lock_outline,
+              color: Theme.of(context).primaryColor,
+            ),
+            suffixIcon: onToggleVisibility != null
+                ? IconButton(
+                    icon: Icon(
+                      obscureText ? Icons.visibility_off : Icons.visibility,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    onPressed: onToggleVisibility,
+                  )
+                : null,
+            filled: true,
+            fillColor: Theme.of(context).cardColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide:
+                  BorderSide(color: Theme.of(context).primaryColor, width: 2),
+            ),
+            contentPadding: const EdgeInsets.all(16),
+            errorText: null,
           ),
         ),
         if (_showErrors && title == 'Old Password' && _oldPasswordError != null)

@@ -18,13 +18,22 @@ class ResourcesScreen extends StatefulWidget {
 class _ResourcesScreenState extends State<ResourcesScreen> {
   bool _isLoading = false;
   List<Resource> _resources = [];
+  List<Resource> _filteredResources = [];
   Set<String> downloadingResources = {}; // Track downloading resources by ID
   late final ResourceService _resourceService;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _initService();
+    _searchController.addListener(_filterResources);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _initService() async {
@@ -41,6 +50,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
       if (!mounted) return;
       setState(() {
         _resources = resources;
+        _filteredResources = resources; // Initialize filtered list
         _isLoading = false;
       });
     } catch (e) {
@@ -52,23 +62,41 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
     }
   }
 
+  void _filterResources() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      if (query.isEmpty) {
+        _filteredResources = _resources;
+      } else {
+        _filteredResources = _resources.where((resource) {
+          return resource.title.toLowerCase().contains(query) ||
+              resource.description.toLowerCase().contains(query) ||
+              resource.type.toLowerCase().contains(query);
+        }).toList();
+      }
+    });
+  }
+
   Future<void> downloadAndOpenResource(
       String url, String title, String type, String resourceId) async {
     setState(() => downloadingResources.add(resourceId));
 
-    final PermissionManager permissionManager = PermissionManager();
-    bool hasPermission =
-        await permissionManager.checkAndRequestStoragePermission(context);
-    if (!hasPermission) {
-      setState(() => downloadingResources.remove(resourceId));
-      if (mounted) {
-        CustomToast.show(
-          context: context,
-          message: 'Storage Permission denied',
-          isError: true,
-        );
+    // Skip permission check on web
+    if (!kIsWeb) {
+      final PermissionManager permissionManager = PermissionManager();
+      bool hasPermission =
+          await permissionManager.checkAndRequestStoragePermission(context);
+      if (!hasPermission) {
+        setState(() => downloadingResources.remove(resourceId));
+        if (mounted) {
+          CustomToast.show(
+            context: context,
+            message: 'Storage Permission denied',
+            isError: true,
+          );
+        }
+        return;
       }
-      return;
     }
 
     if (!mounted) return;
@@ -76,7 +104,20 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
       final filePath =
           await _resourceService.downloadResource(url, title, type, context);
       setState(() => downloadingResources.remove(resourceId));
-      OpenFile.open(filePath);
+
+      // Only try to open file on non-web platforms
+      if (!kIsWeb) {
+        OpenFile.open(filePath);
+      } else {
+        // Show success message on web since we can't open files
+        if (mounted) {
+          CustomToast.show(
+            context: context,
+            message: 'File downloaded successfully',
+            isError: false,
+          );
+        }
+      }
     } catch (e) {
       setState(() => downloadingResources.remove(resourceId));
       if (mounted) {
@@ -97,16 +138,19 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
+                const SizedBox(height: 10),
                 _buildHeader(context),
                 const SizedBox(height: 24),
                 _buildSearchBar(context),
                 const SizedBox(height: 16),
                 _buildFilterChips(context),
                 const SizedBox(height: 16),
-                _resources.isEmpty
+                _filteredResources.isEmpty
                     ? Center(
                         child: Text(
-                          'No resources available',
+                          _searchController.text.isNotEmpty
+                              ? 'No resources found matching "${_searchController.text}"'
+                              : 'No resources available',
                           style: TextStyle(
                             color: Theme.of(context)
                                 .textTheme
@@ -225,13 +269,8 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
   Widget _buildSearchBar(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-            color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
-      ),
       child: TextField(
+        controller: _searchController,
         decoration: InputDecoration(
           hintText: 'Search resources...',
           prefixIcon: Icon(Icons.search,
@@ -240,7 +279,36 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                   .bodyMedium
                   ?.color!
                   .withValues(alpha: 0.7)),
-          border: InputBorder.none,
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: Icon(Icons.clear,
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.color!
+                          .withValues(alpha: 0.7)),
+                  onPressed: () {
+                    _searchController.clear();
+                  },
+                )
+              : null,
+          filled: true,
+          fillColor: Theme.of(context).cardColor,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.2)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide:
+                BorderSide(color: Theme.of(context).primaryColor, width: 2),
+          ),
           contentPadding: const EdgeInsets.all(16),
         ),
       ),
@@ -291,9 +359,9 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
   Widget _buildResourceList() {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: _resources.length,
+      itemCount: _filteredResources.length,
       itemBuilder: (context, index) {
-        final resource = _resources[index];
+        final resource = _filteredResources[index];
         return _buildResourceCard(resource, context);
       },
     );

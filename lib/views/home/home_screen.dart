@@ -22,6 +22,7 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   late PageController _pageController;
   Timer? _timer;
   bool _isLoading = true;
+  bool _isBannersLoading = true;
   bool _isDataFetched = false;
 
   @override
@@ -51,19 +52,21 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final subExamId = userProvider.user?.subExamId;
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _isBannersLoading = true;
+    });
 
     try {
       final testProvider = Provider.of<TestProvider>(context, listen: false);
 
-      // Call fetchTests first
-      // await testProvider.fetchTests();
-
-      // Parallel API calls for fetchTestSeries and fetchBanners
       if (subExamId != null && mounted) {
+        // Fetch test series and banners separately
         await Future.wait([
+          // Fetch test series
           testProvider.fetchTestSeries(subExamId, context, forceRefresh: true),
-          testProvider.fetchBanners(subExamId, context, forceRefresh: true),
+          // Fetch banners with separate loading state
+          _fetchBanners(testProvider, subExamId),
         ]);
       }
     } catch (e) {
@@ -72,7 +75,26 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
     } finally {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _fetchBanners(
+      TestProvider testProvider, String subExamId) async {
+    try {
+      await testProvider.fetchBanners(subExamId, context, forceRefresh: true);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching banners: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isBannersLoading = false;
+        });
       }
     }
   }
@@ -201,6 +223,23 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
+  Widget _buildBannerShimmer() {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+      height: 180,
+      child: Shimmer.fromColors(
+        baseColor: const Color.fromARGB(255, 161, 161, 161),
+        highlightColor: const Color.fromARGB(255, 214, 214, 214),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildShimmerEffect() {
     return Shimmer.fromColors(
       baseColor: const Color.fromARGB(255, 161, 161, 161),
@@ -228,14 +267,7 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             ),
           ),
           // Shimmer for Image Slider
-          Container(
-            margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: Colors.white,
-            ),
-            height: 180,
-          ),
+          _buildBannerShimmer(),
           // Shimmer for Section Header
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -484,7 +516,9 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               : ListView(
                   children: [
                     _buildWelcomeHeader(),
-                    _buildImageSlider(testProvider.banners),
+                    _isBannersLoading
+                        ? _buildBannerShimmer()
+                        : _buildImageSlider(testProvider.banners),
                     // _buildQuickStats(),
                     // const SizedBox(height: 24),
                     // _buildRecommendedSection(),

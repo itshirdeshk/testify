@@ -357,44 +357,43 @@ class _SignupScreenState extends State<SignupScreen> {
     FocusNode? focusNode,
     ValueChanged<String>? onChanged,
   }) {
-    return Container(
-      color: Theme.of(context).cardColor,
-      child: TextFormField(
-        controller: controller,
-        obscureText: isPassword ? (obscureText ?? true) : false,
-        keyboardType: keyboardType,
-        focusNode: focusNode,
-        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-        onChanged: onChanged,
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle:
-              TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
-          prefixIcon: Icon(icon, color: Theme.of(context).primaryColor),
-          suffixIcon: isPassword
-              ? IconButton(
-                  icon: Icon(
-                    obscureText! ? Icons.visibility_off : Icons.visibility,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                  onPressed: onToggleVisibility,
-                )
-              : null,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: Theme.of(context).dividerColor),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: Theme.of(context).dividerColor),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide:
-                BorderSide(color: Theme.of(context).primaryColor, width: 2),
-          ),
-          contentPadding: const EdgeInsets.all(16),
+    return TextFormField(
+      controller: controller,
+      obscureText: isPassword ? (obscureText ?? true) : false,
+      keyboardType: keyboardType,
+      focusNode: focusNode,
+      style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle:
+            TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
+        prefixIcon: Icon(icon, color: Theme.of(context).primaryColor),
+        suffixIcon: isPassword
+            ? IconButton(
+                icon: Icon(
+                  obscureText! ? Icons.visibility_off : Icons.visibility,
+                  color: Theme.of(context).primaryColor,
+                ),
+                onPressed: onToggleVisibility,
+              )
+            : null,
+        filled: true,
+        fillColor: Theme.of(context).cardColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Theme.of(context).dividerColor),
         ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Theme.of(context).dividerColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide:
+              BorderSide(color: Theme.of(context).primaryColor, width: 2),
+        ),
+        contentPadding: const EdgeInsets.all(16),
       ),
     );
   }
@@ -450,7 +449,7 @@ class _SignupScreenState extends State<SignupScreen> {
               onPressed: () => Navigator.pushNamedAndRemoveUntil(
                   context, '/login', (route) => false),
               child: Text(
-                'Login',
+                'Sign In',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).primaryColor,

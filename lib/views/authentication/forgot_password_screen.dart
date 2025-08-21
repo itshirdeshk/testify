@@ -154,44 +154,42 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          color: Theme.of(context).cardColor,
-          child: TextFormField(
-            controller: _emailController,
-            keyboardType: TextInputType.emailAddress,
-            style:
-                TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-            onChanged: (value) {
-              if (_showErrors) {
-                final error = _validateEmail(value);
-                if (_emailError != error) setState(() => _emailError = error);
-              }
-            },
-            decoration: InputDecoration(
-              labelText: 'Email',
-              labelStyle: TextStyle(
-                color: Theme.of(context).textTheme.bodyMedium?.color,
-              ),
-              prefixIcon: Icon(
-                Icons.email_outlined,
-                color: Theme.of(context).primaryColor,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(color: Theme.of(context).dividerColor),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(color: Theme.of(context).dividerColor),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide:
-                    BorderSide(color: Theme.of(context).primaryColor, width: 2),
-              ),
-              contentPadding: const EdgeInsets.all(16),
-              errorText: null,
+        TextFormField(
+          controller: _emailController,
+          keyboardType: TextInputType.emailAddress,
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+          onChanged: (value) {
+            if (_showErrors) {
+              final error = _validateEmail(value);
+              if (_emailError != error) setState(() => _emailError = error);
+            }
+          },
+          decoration: InputDecoration(
+            labelText: 'Email',
+            labelStyle: TextStyle(
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
+            prefixIcon: Icon(
+              Icons.email_outlined,
+              color: Theme.of(context).primaryColor,
+            ),
+            filled: true,
+            fillColor: Theme.of(context).cardColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide:
+                  BorderSide(color: Theme.of(context).primaryColor, width: 2),
+            ),
+            contentPadding: const EdgeInsets.all(16),
+            errorText: null,
           ),
         ),
         if (_showErrors && _emailError != null)
