@@ -62,6 +62,7 @@ class PreTestScreenState extends State<PreTestScreen> {
         _testResponse.unattemptedTests!.where((test) => !test.isFree).toList();
     final previouslyAttemptedTests = _testResponse.attemptedTests!;
 
+
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final isPremium = userProvider.user?.premium ?? false;
 
@@ -225,73 +226,69 @@ class PreTestScreenState extends State<PreTestScreen> {
       List<Test> previouslyAttemptedTests,
       List<Test> premiumTests,
       bool isPremium) {
-    return freeTests.isEmpty &&
-            premiumTests.isEmpty &&
-            previouslyAttemptedTests.isEmpty
-        ? Center(
-            child: Text(
-              'No tests available',
-              style: TextStyle(
-                fontSize: 16,
-                color: Theme.of(context).textTheme.bodyMedium?.color,
-              ),
+    return ListView(padding: const EdgeInsets.all(16), children: [
+      Text(
+        'Free Tests',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).textTheme.bodyLarge?.color,
+        ),
+      ),
+      const SizedBox(height: 16),
+      if (freeTests.isEmpty)
+        Center(
+          child: Text(
+            'No free tests available',
+            style: TextStyle(
+              fontSize: 16,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
-          )
-        : ListView(padding: const EdgeInsets.all(16), children: [
-            if (freeTests.isNotEmpty) ...[
-              Text(
-                'Free Tests',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.bodyLarge?.color,
-                ),
-              ),
-              const SizedBox(height: 16),
-              ...freeTests.map((test) => TestCard(
-                    testInfo: test,
-                    onStart: () => _navigateToTestDetails(test, false),
-                  )),
-              const SizedBox(height: 16),
-              if (previouslyAttemptedTests.isNotEmpty) ...[
-                Text(
-                  'Previously Attempted',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ...previouslyAttemptedTests.map((test) => TestCard(
-                      testInfo: test,
-                      onStart: () => _navigateToTestDetails(test, true),
-                      onResult: () => _navigateToResultScreen(test.id),
-                    )),
-                const SizedBox(height: 16),
-              ],
-              if (premiumTests.isNotEmpty) ...[
-                Text(
-                  'Premium Tests',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ...premiumTests.map((test) => TestCard(
-                      testInfo: test,
-                      onStart: isPremium
-                          ? () => _navigateToTestDetails(test, false)
-                          : () => _showPremiumDialog(),
-                      testNumber: 1,
-                      isPremium: isPremium,
-                    )),
-              ],
-              const SizedBox(height: 16),
-            ]
-          ]);
+          ),
+        )
+      else ...freeTests.map((test) => TestCard(
+            testInfo: test,
+            onStart: () => _navigateToTestDetails(test, false),
+          )),
+      const SizedBox(height: 16),
+      if (previouslyAttemptedTests.isNotEmpty) ...[
+        Text(
+          'Previously Attempted',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).textTheme.bodyLarge?.color,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ...previouslyAttemptedTests.map((test) => TestCard(
+              testInfo: test,
+              onStart: () => _navigateToTestDetails(test, true),
+              onResult: () => _navigateToResultScreen(test.id),
+            )),
+        const SizedBox(height: 16),
+      ],
+      if (premiumTests.isNotEmpty) ...[
+        Text(
+          'Premium Tests',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).textTheme.bodyLarge?.color,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ...premiumTests.map((test) => TestCard(
+              testInfo: test,
+              onStart: isPremium
+                  ? () => _navigateToTestDetails(test, false)
+                  : () => _showPremiumDialog(),
+              testNumber: 1,
+              isPremium: isPremium,
+            )),
+      ],
+      const SizedBox(height: 16),
+    ]);
   }
 
   // Widget _buildLockedTestsList(List<Test> premiumTests) {
