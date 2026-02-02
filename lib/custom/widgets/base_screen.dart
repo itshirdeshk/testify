@@ -181,7 +181,7 @@ class _BaseScreenState extends State<BaseScreen> {
                 ),
                 value: themeProvider.isDarkMode,
                 onChanged: (value) => themeProvider.toggleTheme(),
-                activeColor: Theme.of(context).primaryColor,
+                activeThumbColor: Theme.of(context).primaryColor,
               ),
             ),
             const Divider(height: 32),
