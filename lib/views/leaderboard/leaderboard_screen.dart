@@ -18,8 +18,13 @@ class LeaderboardScreenState extends State<LeaderboardScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _isLeaderboardLoading = true;
-  List<Leaderboard>? _leaderboard;
+  List<Leaderboard> _leaderboard = [];
   late final ScoreService _scoreService;
+  static const int _leaderboardPageSize = 10;
+  bool _isLoadingMoreLeaderboard = false;
+  bool _hasMoreLeaderboard = true;
+  int _currentLeaderboardPage = 1;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -30,33 +35,74 @@ class LeaderboardScreenState extends State<LeaderboardScreen>
 
   Future<void> _initService() async {
     _scoreService = await ScoreService.create(context);
-    await _fetchLeaderboard();
+    await _fetchLeaderboard(reset: true);
   }
 
-  Future<void> _fetchLeaderboard() async {
-    setState(() {
-      _isLeaderboardLoading = true;
-    });
+  Future<void> _fetchLeaderboard({bool reset = false}) async {
+    if (reset) {
+      if (mounted) {
+        setState(() {
+          _isLeaderboardLoading = true;
+          _errorMessage = null;
+          _currentLeaderboardPage = 1;
+          _hasMoreLeaderboard = true;
+        });
+      }
+    } else {
+      if (_isLoadingMoreLeaderboard || !_hasMoreLeaderboard) return;
+      if (mounted) {
+        setState(() {
+          _isLoadingMoreLeaderboard = true;
+        });
+      }
+    }
 
     try {
-      final List<Leaderboard> leaderboard;
+      if (widget.testId == null || widget.testId!.isEmpty) {
+        if (!mounted) return;
+        setState(() {
+          _leaderboard = [];
+          _isLeaderboardLoading = false;
+          _isLoadingMoreLeaderboard = false;
+          _hasMoreLeaderboard = false;
+        });
+        return;
+      }
 
-      if (widget.testId != null && widget.testId!.isNotEmpty) {
-        leaderboard = await _scoreService.getLeaderboard(widget.testId!);
-        if (mounted) {
-          setState(() {
-            _leaderboard = leaderboard;
-            _isLeaderboardLoading = false;
-          });
-        }
+      final nextPage = reset ? 1 : (_currentLeaderboardPage + 1);
+      final leaderboard = await _scoreService.getLeaderboardPaginated(
+        widget.testId!,
+        page: nextPage,
+        limit: _leaderboardPageSize,
+      );
+
+      if (mounted) {
+        setState(() {
+          _leaderboard = reset
+              ? leaderboard.items
+              : [..._leaderboard, ...leaderboard.items];
+          _currentLeaderboardPage = leaderboard.pagination.currentPage;
+          _hasMoreLeaderboard = leaderboard.pagination.hasNextPage;
+          _isLeaderboardLoading = false;
+          _isLoadingMoreLeaderboard = false;
+        });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
+          if (reset) {
+            _leaderboard = [];
+          }
+          _errorMessage = 'Unable to load leaderboard right now.';
           _isLeaderboardLoading = false;
+          _isLoadingMoreLeaderboard = false;
         });
       }
     }
+  }
+
+  Future<void> _loadMoreLeaderboard() async {
+    await _fetchLeaderboard(reset: false);
   }
 
   @override
@@ -117,13 +163,17 @@ class LeaderboardScreenState extends State<LeaderboardScreen>
         children: [
           _isLeaderboardLoading
               ? const Center(child: CircularProgressIndicator())
-              : _buildLeaderboardTab(_leaderboard!),
+              : _buildLeaderboardTab(_leaderboard),
         ],
       ),
     );
   }
 
   Widget _buildLeaderboardTab(List<Leaderboard> leaderboard) {
+    if (leaderboard.isEmpty && _errorMessage != null) {
+      return _buildErrorState(_errorMessage!);
+    }
+
     return Column(
       children: [
         Card(
@@ -230,7 +280,10 @@ class LeaderboardScreenState extends State<LeaderboardScreen>
     final double height = position == 1 ? 120 : 100;
     final bool isFirst = position == 1;
 
-    final firstName = name.split(' ').first;
+    final sanitizedName = name.trim();
+    final firstName = sanitizedName.isEmpty
+      ? 'N/A'
+      : sanitizedName.split(RegExp(r'\s+')).first;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -246,7 +299,7 @@ class LeaderboardScreenState extends State<LeaderboardScreen>
               ],
             ),
           ),
-          child: profilePicure == null
+            child: profilePicure == null || profilePicure.trim().isEmpty
               ? CircleAvatar(
                   radius: isFirst ? 30 : 25,
                   backgroundColor: Colors.white,
@@ -314,65 +367,122 @@ class LeaderboardScreenState extends State<LeaderboardScreen>
   }
 
   Widget _buildLeaderboardList(List<Leaderboard> leaderboard) {
-    return leaderboard.length < 4
-        ? Center(
+    final remainingParticipants = leaderboard.skip(3).toList();
+    final shouldShowLoadMore = _hasMoreLeaderboard || _isLoadingMoreLeaderboard;
+
+    if (remainingParticipants.isEmpty && !shouldShowLoadMore) {
+      return Center(
+        child: Text(
+          'No participants found.',
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyLarge?.color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      itemCount: remainingParticipants.length + (shouldShowLoadMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index >= remainingParticipants.length) {
+          if (_isLoadingMoreLeaderboard) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Center(
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            );
+          }
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Center(
+              child: OutlinedButton(
+                onPressed: _hasMoreLeaderboard ? _loadMoreLeaderboard : null,
+                child: const Text('Load More'),
+              ),
+            ),
+          );
+        }
+
+        final participant = remainingParticipants[index];
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+          leading: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                '${participant.rank}',
+                style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          title: Text(
+            participant.user.name,
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).textTheme.bodyLarge?.color,
+            ),
+          ),
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
             child: Text(
-              'No more participants.',
+              '${participant.score.totalMarksObtained}/${participant.score.totalMarks}',
               style: TextStyle(
-                color: Theme.of(context).textTheme.bodyLarge?.color,
+                color: Theme.of(context).primaryColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
-          )
-        : ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: leaderboard.length > 3 ? leaderboard.length - 3 : 0,
-            itemBuilder: (context, index) {
-              return ListTile(
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${leaderboard[index + 3].rank}',
-                      style: TextStyle(
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                title: Text(
-                  leaderboard[index + 3].user.name,
-                  style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).textTheme.bodyLarge?.color),
-                ),
-                trailing: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${leaderboard[index + 3].score.totalMarksObtained}/${leaderboard[index + 3].score.totalMarks}',
-                    style: TextStyle(
-                      color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildErrorState(String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.color
+                    ?.withValues(alpha: 0.8),
+              ),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: () => _fetchLeaderboard(reset: true),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

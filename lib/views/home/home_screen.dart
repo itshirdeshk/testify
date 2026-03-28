@@ -50,7 +50,7 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   Future<void> _fetchData() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final subExamId = userProvider.user?.subExamId;
+    final subExamId = (userProvider.user?.subExamId ?? '').trim();
 
     setState(() {
       _isLoading = true;
@@ -60,7 +60,7 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     try {
       final testProvider = Provider.of<TestProvider>(context, listen: false);
 
-      if (subExamId != null && mounted) {
+      if (subExamId.isNotEmpty && mounted) {
         // Fetch test series and banners separately
         await Future.wait([
           // Fetch test series
@@ -68,6 +68,10 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           // Fetch banners with separate loading state
           _fetchBanners(testProvider, subExamId),
         ]);
+      } else if (mounted) {
+        setState(() {
+          _isBannersLoading = false;
+        });
       }
     } catch (e) {
       if (kDebugMode) {
@@ -102,7 +106,10 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void _startImageSlider() {
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (_pageController.hasClients) {
-        int nextPage = _pageController.page!.toInt() + 1;
+        final currentPage =
+            (_pageController.page ?? _pageController.initialPage.toDouble())
+                .round();
+        int nextPage = currentPage + 1;
         if (nextPage >= 1000) {
           nextPage = 1000 ~/ 2; // Jump to the middle
         }
@@ -116,16 +123,17 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   void _onBannerTap(banner_model.Banner banner) {
-    if (banner.type == 'test-series') {
+    final redirect = banner.redirectId;
+    if (banner.type == 'test-series' && redirect != null) {
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => TestSeriesDetailScreen(
-            title: banner.redirectId.name,
-            imageUrl: banner.redirectId.image,
-            totalTests: banner.redirectId.totalTests,
-            freeTests: banner.redirectId.freeTests,
-            id: banner.redirectId.id,
+            title: redirect.name,
+            imageUrl: redirect.image,
+            totalTests: redirect.totalTests,
+            freeTests: redirect.freeTests,
+            id: redirect.id,
           ),
         ),
       );
@@ -212,6 +220,20 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             banner.url,
                             fit: BoxFit.cover,
                             width: double.infinity,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Theme.of(context).cardColor,
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  Icons.broken_image_outlined,
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.color
+                                      ?.withValues(alpha: 0.7),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ),
@@ -554,7 +576,8 @@ class HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         context,
                         MaterialPageRoute(
                           builder: (context) => TestSeriesScreen(
-                            testSeries: testProvider.testSeries,
+                            subExamId: (context.read<UserProvider>().user?.subExamId ?? '')
+                                .trim(),
                           ),
                         ),
                       ),

@@ -18,7 +18,11 @@ class QuestionService {
     try {
       final response = await _dio.get('/question/question/$testId');
       if (response.statusCode == 200) {
-        final List<dynamic> questionsJson = response.data['questions'];
+        final questionsJson = response.data['questions'];
+        if (questionsJson is! List) {
+          return [];
+        }
+
         return questionsJson.map((json) => Question.fromJson(json)).toList();
       }
       return [];

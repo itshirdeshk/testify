@@ -20,12 +20,16 @@ class AppRoutes {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/otp':
+        final args = settings.arguments;
+        if (args is! Map<String, dynamic>) {
+          return MaterialPageRoute(builder: (context) => const LoginScreen());
+        }
+
         return MaterialPageRoute(
           builder: (context) {
-            final args = settings.arguments as Map<String, dynamic>;
             return OtpScreen(
-              email: args['email'] as String,
-              screen: args['screen'] as bool,
+              email: (args['email'] ?? '').toString(),
+              screen: args['screen'] == true,
             );
           },
         );

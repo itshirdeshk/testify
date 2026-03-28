@@ -2,10 +2,8 @@ import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:testify/utils/constants.dart';
+import 'package:testify/utils/custom_dio.dart';
 
 class NotificationService {
   NotificationService._();
@@ -35,7 +33,8 @@ class NotificationService {
         }
       });
 
-      await _sendTokenToBackend();
+      if (!context.mounted) return;
+      await _sendTokenToBackend(context);
       _initialized = true;
     } catch (e) {
       if (kDebugMode) {
@@ -150,19 +149,16 @@ class NotificationService {
     }
   }
 
-  Future<void> _sendTokenToBackend() async {
+  Future<void> _sendTokenToBackend(BuildContext context) async {
     final token = await _messaging.getToken();
-    if (token == null) return;
-    final prefs = await SharedPreferences.getInstance();
-    final jwt = prefs.getString('token');
-    const baseUrl = Constants.baseUrl;
-    if (jwt == null) return;
+    if (token == null || token.trim().isEmpty) return;
+    if (!context.mounted) return;
+
     try {
-      final dio = Dio();
+      final dio = await CustomDio.create(context);
       await dio.post(
-        '$baseUrl/user/save-device-token',
+        '/user/save-device-token',
         data: {'deviceToken': token},
-        options: Options(headers: {'Authorization': 'Bearer $jwt'}),
       );
     } catch (e) {
       // Handle error
@@ -172,8 +168,8 @@ class NotificationService {
     }
   }
 
-  Future<void> sendTokenIfNeeded() async {
-    await _sendTokenToBackend();
+  Future<void> sendTokenIfNeeded(BuildContext context) async {
+    await _sendTokenToBackend(context);
   }
 }
 

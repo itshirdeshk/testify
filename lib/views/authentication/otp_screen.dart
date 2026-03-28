@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:testify/controllers/auth_controller.dart';
 import 'package:testify/services/auth_service.dart';
 import 'package:testify/widgets/custom_toast.dart';
@@ -16,20 +17,49 @@ class OtpScreen extends StatefulWidget {
 
 class _OtpScreenState extends State<OtpScreen> {
   final AuthController _authController = AuthController();
+  final List<FocusNode> _otpFocusNodes =
+      List.generate(6, (_) => FocusNode());
   final _formKey = GlobalKey<FormState>(); // Key for form validation
   bool _isLoading = false;
+  int _focusedOtpIndex = -1;
   int _resendTimer = 30;
   Timer? _timer;
 
   @override
   void initState() {
     super.initState();
+    for (int i = 0; i < _otpFocusNodes.length; i++) {
+      final node = _otpFocusNodes[i];
+      node.addListener(() {
+        if (!mounted) return;
+
+        if (node.hasFocus) {
+          if (_focusedOtpIndex != i) {
+            setState(() {
+              _focusedOtpIndex = i;
+            });
+          }
+          return;
+        }
+
+        final currentFocusedIndex =
+            _otpFocusNodes.indexWhere((focusNode) => focusNode.hasFocus);
+        if (_focusedOtpIndex != currentFocusedIndex) {
+          setState(() {
+            _focusedOtpIndex = currentFocusedIndex;
+          });
+        }
+      });
+    }
     _startResendTimer();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    for (final node in _otpFocusNodes) {
+      node.dispose();
+    }
     super.dispose();
   }
 
@@ -153,9 +183,22 @@ class _OtpScreenState extends State<OtpScreen> {
   Widget _buildOtpFields() {
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List.generate(6, (index) => _buildOtpDigitField(index)),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            const spacing = 8.0;
+            final maxFieldWidth = (constraints.maxWidth - (spacing * 5)) / 6;
+            final fieldWidth = maxFieldWidth.clamp(38.0, 45.0).toDouble();
+
+            return Wrap(
+              alignment: WrapAlignment.center,
+              spacing: spacing,
+              runSpacing: spacing,
+              children: List.generate(
+                6,
+                (index) => _buildOtpDigitField(index, width: fieldWidth),
+              ),
+            );
+          },
         ),
         const SizedBox(height: 16),
         Text(
@@ -189,54 +232,94 @@ class _OtpScreenState extends State<OtpScreen> {
     );
   }
 
-  Widget _buildOtpDigitField(int index) {
-    return Container(
-      width: 45,
+  Widget _buildOtpDigitField(int index, {double width = 45}) {
+    final bool isFocused = _focusedOtpIndex == index;
+    final outlineColor = Theme.of(context).colorScheme.outline;
+    final borderColor = isFocused
+        ? Theme.of(context).primaryColor
+        : outlineColor.withValues(alpha: 0.75);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 120),
+      width: width,
       height: 55,
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: Theme.of(context).dividerColor,
+          color: borderColor,
+          width: isFocused ? 1.5 : 1,
         ),
       ),
-      child: TextFormField(
-        controller: _authController.otpControllers[index],
-        keyboardType: TextInputType.number,
-        textAlign: TextAlign.center,
-        maxLength: 1,
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).textTheme.bodyLarge?.color,
-        ),
-        decoration: const InputDecoration(
-          counterText: '',
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.zero,
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return '';
-          }
-          return null;
-        },
-        onChanged: (value) {
-          if (value.length == 1) {
-            if (index < 5) {
-              FocusScope.of(context).nextFocus(); // Move to the next field
-            } else {
-              _handleVerifyOtp(); // Submit OTP if the last field is filled
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(7),
+        child: TextFormField(
+          controller: _authController.otpControllers[index],
+          focusNode: _otpFocusNodes[index],
+          onTap: () {
+            if (_focusedOtpIndex != index) {
+              setState(() {
+                _focusedOtpIndex = index;
+              });
             }
-          } else if (value.isEmpty && index > 0) {
-            FocusScope.of(context)
-                .previousFocus(); // Move to the previous field
-          }
-        },
-        onTap: () {
-          // Clear the field when tapped (optional)
-          _authController.otpControllers[index].clear();
-        },
+          },
+          keyboardType: TextInputType.number,
+          textInputAction:
+              index < 5 ? TextInputAction.next : TextInputAction.done,
+          textAlign: TextAlign.center,
+          textAlignVertical: TextAlignVertical.center,
+          maxLength: 1,
+          cursorColor: Theme.of(context).primaryColor,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(1),
+          ],
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).textTheme.bodyLarge?.color,
+          ),
+          decoration: InputDecoration(
+            counterText: '',
+            isDense: true,
+            fillColor: Theme.of(context).cardColor,
+            filled: true,
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            errorBorder: InputBorder.none,
+            focusedErrorBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return '';
+            }
+            return null;
+          },
+          onChanged: (value) {
+            if (value.isNotEmpty) {
+              if (index < 5) {
+                setState(() {
+                  _focusedOtpIndex = index + 1;
+                });
+                _otpFocusNodes[index + 1].requestFocus();
+              } else {
+                setState(() {
+                  _focusedOtpIndex = -1;
+                });
+                _otpFocusNodes[index].unfocus();
+                _handleVerifyOtp(); // Submit OTP if the last field is filled
+              }
+            } else if (index > 0) {
+              setState(() {
+                _focusedOtpIndex = index - 1;
+              });
+              _otpFocusNodes[index - 1].requestFocus();
+            }
+          },
+        ),
       ),
     );
   }

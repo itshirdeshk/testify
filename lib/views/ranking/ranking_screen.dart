@@ -23,6 +23,13 @@ class _RankingScreenState extends State<RankingScreen> {
   final int currentUserScore = 950;
 
   final String currentUserName = 'David';
+  int _visibleRankings = 10;
+  static const int _rankingPageSize = 10;
+
+  String _initialFromName(dynamic nameValue) {
+    final name = (nameValue ?? '').toString().trim();
+    return name.isEmpty ? '?' : name[0].toUpperCase();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,9 +48,26 @@ class _RankingScreenState extends State<RankingScreen> {
         children: [
           _buildHeader(context),
           const SizedBox(height: 24),
-          _buildTopRankers(),
-          const SizedBox(height: 24),
-          Expanded(child: _buildRankingList()),
+          if (userRankings.isEmpty)
+            Expanded(
+              child: Center(
+                child: Text(
+                  'No rankings available.',
+                  style: TextStyle(
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.color
+                        ?.withValues(alpha: 0.8),
+                  ),
+                ),
+              ),
+            )
+          else ...[
+            _buildTopRankers(),
+            const SizedBox(height: 24),
+            Expanded(child: _buildRankingList()),
+          ],
         ],
       ),
     );
@@ -137,6 +161,16 @@ class _RankingScreenState extends State<RankingScreen> {
   }
 
   Widget _buildTopRankers() {
+    final sortedRankings = [...userRankings]
+      ..sort((a, b) =>
+          ((a['rank'] as num?) ?? 0).toInt().compareTo(
+                ((b['rank'] as num?) ?? 0).toInt(),
+              ));
+
+    final first = sortedRankings.isNotEmpty ? sortedRankings[0] : null;
+    final second = sortedRankings.length > 1 ? sortedRankings[1] : null;
+    final third = sortedRankings.length > 2 ? sortedRankings[2] : null;
+
     return Container(
       height: 120,
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -144,9 +178,9 @@ class _RankingScreenState extends State<RankingScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          _buildTopRankerItem(userRankings[1], 2, Colors.grey),
-          _buildTopRankerItem(userRankings[0], 1, Colors.amber),
-          _buildTopRankerItem(userRankings[2], 3, Colors.brown),
+          if (second != null) _buildTopRankerItem(second, 2, Colors.grey),
+          if (first != null) _buildTopRankerItem(first, 1, Colors.amber),
+          if (third != null) _buildTopRankerItem(third, 3, Colors.brown),
         ],
       ),
     );
@@ -166,7 +200,7 @@ class _RankingScreenState extends State<RankingScreen> {
           radius: 20,
           backgroundColor: color.withValues(alpha: 0.2),
           child: Text(
-            user['name'][0],
+            _initialFromName(user['name']),
             style: TextStyle(
               color: color,
               fontWeight: FontWeight.bold,
@@ -207,10 +241,30 @@ class _RankingScreenState extends State<RankingScreen> {
   }
 
   Widget _buildRankingList() {
+    final visibleCount =
+        userRankings.length < _visibleRankings ? userRankings.length : _visibleRankings;
+    final hasMore = userRankings.length > visibleCount;
+
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: userRankings.length,
+      itemCount: visibleCount + (hasMore ? 1 : 0),
       itemBuilder: (context, index) {
+        if (index >= visibleCount) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Center(
+              child: OutlinedButton(
+                onPressed: () {
+                  setState(() {
+                    _visibleRankings += _rankingPageSize;
+                  });
+                },
+                child: const Text('Load More'),
+              ),
+            ),
+          );
+        }
+
         final user = userRankings[index];
         final isCurrentUser = user['rank'] == currentUserRank;
 
@@ -234,7 +288,7 @@ class _RankingScreenState extends State<RankingScreen> {
                   ? Theme.of(context).primaryColor.withValues(alpha: 0.2)
                   : Colors.grey.withValues(alpha: 0.2),
               child: Text(
-                user['name'][0],
+                _initialFromName(user['name']),
                 style: TextStyle(
                   color: isCurrentUser
                       ? Theme.of(context).primaryColor

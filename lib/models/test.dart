@@ -19,13 +19,13 @@ class Test {
 
   factory Test.fromJson(Map<String, dynamic> json) {
     return Test(
-      id: json['_id'],
-      title: json['title'],
-      totalQuestions: json['totalQuestions'],
-      duration: json['duration'],
-      totalMarks: json['totalMarks'],
-      isFree: json['isFree'],
-      mockTest: json['mockTest'],
+      id: (json['_id'] ?? '').toString(),
+      title: (json['title'] ?? '').toString(),
+      totalQuestions: (json['totalQuestions'] as num?)?.toInt() ?? 0,
+      duration: (json['duration'] as num?)?.toInt() ?? 0,
+      totalMarks: (json['totalMarks'] as num?)?.toInt() ?? 0,
+      isFree: json['isFree'] == true,
+      mockTest: (json['mockTest'] ?? '').toString(),
     );
   }
 }
@@ -40,11 +40,21 @@ class TestResponse {
   });
 
   factory TestResponse.fromJson(Map<String, dynamic> json) {
+    final rawUnattempted = json['unattemptedTests'];
+    final rawAttempted = json['attemptedTests'];
+    final unattempted =
+        rawUnattempted is List ? rawUnattempted : const <dynamic>[];
+    final attempted = rawAttempted is List ? rawAttempted : const <dynamic>[];
+
     return TestResponse(
-      unattemptedTests:
-          json['unattemptedTests'].map((test) => Test.fromJson(test)).toList(),
-      attemptedTests: json['attemptedTests']
-          .map((test) => Test.fromJson(test['test']))
+      unattemptedTests: unattempted
+          .whereType<Map<String, dynamic>>()
+          .map((test) => Test.fromJson(test))
+          .toList(),
+      attemptedTests: attempted
+          .map((test) => test is Map<String, dynamic> ? test['test'] : null)
+          .whereType<Map<String, dynamic>>()
+          .map((test) => Test.fromJson(test))
           .toList(),
     );
   }

@@ -18,12 +18,19 @@ class TestService {
     try {
       final response = await _dio.get('/test/test/$mockTestId');
       if (response.statusCode == 200) {
-        final List<dynamic> testsJson = response.data['unattemptedTests'];
-        final List<dynamic> previouslyAttemptedTestsJson =
-            response.data['attemptedTests'];
+        final testsJson = response.data['unattemptedTests'];
+        final previouslyAttemptedTestsJson = response.data['attemptedTests'];
+
+        if (testsJson is! List || previouslyAttemptedTestsJson is! List) {
+          return TestResponse(unattemptedTests: [], attemptedTests: []);
+        }
+
         final tests = testsJson.map((json) => Test.fromJson(json)).toList();
         final previouslyAttemptedTests = previouslyAttemptedTestsJson
-            .map((json) => Test.fromJson(json['test']))
+          .map((json) =>
+            json is Map<String, dynamic> ? json['test'] : null)
+          .whereType<Map<String, dynamic>>()
+          .map((json) => Test.fromJson(json))
             .toList();
         return TestResponse(
             unattemptedTests: tests, attemptedTests: previouslyAttemptedTests);

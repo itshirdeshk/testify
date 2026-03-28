@@ -31,7 +31,7 @@ class QuizScreenState extends State<QuizScreen> {
   int _currentQuestionIndex = 0;
   int _totalCorrect = 0;
   int _totalIncorrect = 0;
-  late Timer timer;
+  Timer? _timer;
   int? timeRemaining; // Make nullable to handle initial state
 
   @override
@@ -54,8 +54,12 @@ class QuizScreenState extends State<QuizScreen> {
           _questions = questions;
           timeRemaining = widget.duration * 60; // Convert minutes to seconds
           _isLoading = false;
-          startTimer();
+          _updateTimerNotifier();
         });
+
+        if (_questions.isNotEmpty) {
+          startTimer();
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -81,17 +85,25 @@ class QuizScreenState extends State<QuizScreen> {
 
   @override
   void dispose() {
-    timer.cancel();
+    _timer?.cancel();
     _timerNotifier.dispose();
     super.dispose();
   }
 
   void startTimer() {
+    if (timeRemaining == null) return;
+
     const oneSecond = Duration(seconds: 1);
-    timer = Timer.periodic(oneSecond, (Timer timer) {
-      if (timeRemaining! > 0) {
+    _timer?.cancel();
+    _timer = Timer.periodic(oneSecond, (Timer timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      if ((timeRemaining ?? 0) > 0) {
         setState(() {
-          timeRemaining = timeRemaining! - 1;
+          timeRemaining = (timeRemaining ?? 0) - 1;
           _updateTimerNotifier(); // Update the notifier
         });
       } else {
@@ -102,6 +114,11 @@ class QuizScreenState extends State<QuizScreen> {
   }
 
   void _updateTimerNotifier() {
+    if (timeRemaining == null) {
+      _timerNotifier.value = '00:00';
+      return;
+    }
+
     final minutes = (timeRemaining! ~/ 60);
     final seconds = (timeRemaining! % 60);
     _timerNotifier.value =
@@ -109,6 +126,11 @@ class QuizScreenState extends State<QuizScreen> {
   }
 
   void endQuiz() {
+    if (_questions.isEmpty) {
+      Navigator.pop(context);
+      return;
+    }
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -226,7 +248,6 @@ class QuizScreenState extends State<QuizScreen> {
                 ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop(true);
-                    Navigator.of(context).pop(true);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
@@ -342,8 +363,15 @@ class QuizScreenState extends State<QuizScreen> {
     final question = _questions[_currentQuestionIndex];
     final options = question.options;
 
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _onWillPop().then((shouldPop) {
+          if (!mounted || !shouldPop) return;
+          Navigator.of(this.context).pop();
+        });
+      },
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -351,7 +379,12 @@ class QuizScreenState extends State<QuizScreen> {
           leading: IconButton(
             icon: Icon(Icons.arrow_back,
                 color: Theme.of(context).textTheme.bodyLarge?.color),
-            onPressed: () => _onWillPop(),
+            onPressed: () {
+              _onWillPop().then((shouldPop) {
+                if (!mounted || !shouldPop) return;
+                Navigator.of(this.context).pop();
+              });
+            },
           ),
         ),
         body: Container(

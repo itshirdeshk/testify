@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,63 +19,117 @@ class ResourcesScreen extends StatefulWidget {
 
 class _ResourcesScreenState extends State<ResourcesScreen> {
   bool _isLoading = false;
+  bool _isLoadingMore = false;
+  String? _errorMessage;
   List<Resource> _resources = [];
-  List<Resource> _filteredResources = [];
   Set<String> downloadingResources = {}; // Track downloading resources by ID
   late final ResourceService _resourceService;
   final TextEditingController _searchController = TextEditingController();
+  Timer? _searchDebounce;
+  int _currentPage = 1;
+  static const int _pageSize = 10;
+  bool _hasMoreResources = true;
 
   @override
   void initState() {
     super.initState();
     _initService();
-    _searchController.addListener(_filterResources);
+    _searchController.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
   Future<void> _initService() async {
     _resourceService = await ResourceService.create(context);
-    _fetchResources();
+    await _fetchResources(reset: true);
   }
 
-  Future<void> _fetchResources() async {
-    setState(() => _isLoading = true);
+  Future<void> _fetchResources({bool reset = true}) async {
+    if (reset) {
+      if (mounted) {
+        setState(() {
+          _isLoading = true;
+          _errorMessage = null;
+          _currentPage = 1;
+          _hasMoreResources = true;
+        });
+      }
+    } else {
+      if (_isLoadingMore || !_hasMoreResources) {
+        return;
+      }
+      if (mounted) {
+        setState(() {
+          _isLoadingMore = true;
+        });
+      }
+    }
+
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final subExamId = userProvider.user?.subExamId;
-    try {
-      final resources = await _resourceService.getResources(subExamId!);
+    final subExamId = (userProvider.user?.subExamId ?? '').trim();
+
+    if (subExamId.isEmpty) {
       if (!mounted) return;
       setState(() {
-        _resources = resources;
-        _filteredResources = resources; // Initialize filtered list
+        _resources = [];
+        _currentPage = 1;
+        _hasMoreResources = false;
+        _errorMessage =
+            'Please select an exam and sub-exam before viewing resources.';
         _isLoading = false;
+        _isLoadingMore = false;
+      });
+      return;
+    }
+
+    try {
+      final nextPage = reset ? 1 : (_currentPage + 1);
+      final searchTitle = _searchController.text.trim();
+      final response = await _resourceService.getResourcesPaginated(
+        subExamId,
+        page: nextPage,
+        limit: _pageSize,
+        title: searchTitle.isEmpty ? null : searchTitle,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _resources =
+            reset ? response.items : <Resource>[..._resources, ...response.items];
+        _currentPage = response.pagination.currentPage;
+        _hasMoreResources = response.pagination.hasNextPage;
+        _errorMessage = null;
+        _isLoading = false;
+        _isLoadingMore = false;
       });
     } catch (e) {
       if (kDebugMode) {
         print('Error fetching resources: $e');
       }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Unable to load resources right now.';
+          _isLoading = false;
+          _isLoadingMore = false;
+        });
+      }
     }
   }
 
-  void _filterResources() {
-    final query = _searchController.text.toLowerCase();
-    setState(() {
-      if (query.isEmpty) {
-        _filteredResources = _resources;
-      } else {
-        _filteredResources = _resources.where((resource) {
-          return resource.title.toLowerCase().contains(query) ||
-              resource.description.toLowerCase().contains(query) ||
-              resource.type.toLowerCase().contains(query);
-        }).toList();
-      }
+  void _onSearchChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 400), () {
+      if (!mounted) return;
+      _fetchResources(reset: true);
     });
   }
 
@@ -145,27 +201,61 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                 const SizedBox(height: 16),
                 _buildFilterChips(context),
                 const SizedBox(height: 16),
-                _filteredResources.isEmpty
-                    ? Center(
-                        child: Text(
-                          _searchController.text.isNotEmpty
-                              ? 'No resources found matching "${_searchController.text}"'
-                              : 'No resources available',
-                          style: TextStyle(
-                            color: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.color
-                                ?.withValues(alpha: 0.7),
-                          ),
-                        ),
-                      )
-                    : Expanded(
-                        child: _buildResourceList(),
-                      ),
+                Expanded(child: _buildContentState()),
               ],
             ),
     );
+  }
+
+  Widget _buildContentState() {
+    if (_errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _errorMessage!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.color
+                      ?.withValues(alpha: 0.8),
+                ),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: () => _fetchResources(reset: true),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_resources.isEmpty) {
+      return Center(
+        child: Text(
+          _searchController.text.isNotEmpty
+              ? 'No resources found matching "${_searchController.text}"'
+              : 'No resources available',
+          style: TextStyle(
+            color: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.color
+                ?.withValues(alpha: 0.7),
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    return _buildResourceList();
   }
 
   Widget _buildHeader(BuildContext context) {
@@ -359,9 +449,35 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
   Widget _buildResourceList() {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: _filteredResources.length,
+      itemCount: _resources.length + ((_hasMoreResources || _isLoadingMore) ? 1 : 0),
       itemBuilder: (context, index) {
-        final resource = _filteredResources[index];
+        if (index >= _resources.length) {
+          if (_isLoadingMore) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Center(
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            );
+          }
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Center(
+              child: OutlinedButton(
+                onPressed:
+                    _hasMoreResources ? () => _fetchResources(reset: false) : null,
+                child: const Text('Load More'),
+              ),
+            ),
+          );
+        }
+
+        final resource = _resources[index];
         return _buildResourceCard(resource, context);
       },
     );

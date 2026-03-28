@@ -20,6 +20,7 @@ class BaseScreen extends StatefulWidget {
 class _BaseScreenState extends State<BaseScreen> {
   int _currentIndex = 0;
   final PageController _pageController = PageController();
+  bool _isSessionRedirecting = false;
 
   final List<Widget> _screens = [
     const HomeScreen(),
@@ -46,10 +47,32 @@ class _BaseScreenState extends State<BaseScreen> {
   @override
   Widget build(BuildContext context) {
     return Consumer<UserProvider>(builder: (context, userProvider, child) {
+      if (!userProvider.isInitialized) {
+        return const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        );
+      }
+
       final user = userProvider.user;
       if (user == null) {
-        return const Center(child: CircularProgressIndicator());
+        if (!_isSessionRedirecting) {
+          _isSessionRedirecting = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/login',
+              (route) => false,
+            );
+          });
+        }
+        return const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        );
       }
+
+      _isSessionRedirecting = false;
+
       return Scaffold(
         backgroundColor: Colors.white,
         appBar: _buildAppBar(),

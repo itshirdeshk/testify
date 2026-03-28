@@ -36,8 +36,8 @@ class TestScreenMainState extends State<TestScreenMain> {
     if (!mounted) return;
 
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final subExamId = userProvider.user?.subExamId;
-    if (subExamId != null) {
+    final subExamId = (userProvider.user?.subExamId ?? '').trim();
+    if (subExamId.isNotEmpty) {
       if (!mounted) return;
       await Provider.of<TestProvider>(context, listen: false)
           .fetchTestSeries(subExamId, context);
@@ -50,7 +50,10 @@ class TestScreenMainState extends State<TestScreenMain> {
   void _startImageSlider() {
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (_pageController.hasClients) {
-        int nextPage = _pageController.page!.toInt() + 1;
+        final currentPage =
+            (_pageController.page ?? _pageController.initialPage.toDouble())
+                .round();
+        int nextPage = currentPage + 1;
         if (nextPage >= 1000) {
           nextPage = 1000 ~/ 2;
         }
@@ -64,16 +67,17 @@ class TestScreenMainState extends State<TestScreenMain> {
   }
 
   void _onBannerTap(banner_model.Banner banner) {
-    if (banner.type == 'test-series') {
+    final redirect = banner.redirectId;
+    if (banner.type == 'test-series' && redirect != null) {
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => TestSeriesDetailScreen(
-            title: banner.redirectId.name,
-            imageUrl: banner.redirectId.image,
-            totalTests: banner.redirectId.totalTests,
-            freeTests: banner.redirectId.freeTests,
-            id: banner.redirectId.id,
+            title: redirect.name,
+            imageUrl: redirect.image,
+            totalTests: redirect.totalTests,
+            freeTests: redirect.freeTests,
+            id: redirect.id,
           ),
         ),
       );
@@ -530,7 +534,8 @@ class TestScreenMainState extends State<TestScreenMain> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => TestSeriesScreen(
-                    testSeries: testProvider.testSeries,
+                    subExamId:
+                        (context.read<UserProvider>().user?.subExamId ?? '').trim(),
                   ),
                 ),
               ),
@@ -728,6 +733,20 @@ class TestScreenMainState extends State<TestScreenMain> {
                             banner.url,
                             fit: BoxFit.cover,
                             width: double.infinity,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Theme.of(context).cardColor,
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  Icons.broken_image_outlined,
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.color
+                                      ?.withValues(alpha: 0.7),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ),

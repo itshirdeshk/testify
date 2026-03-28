@@ -15,11 +15,11 @@ class RedirectModel {
 
   factory RedirectModel.fromJson(Map<String, dynamic> json) {
     return RedirectModel(
-      id: json['_id'],
-      name: json['name'],
-      image: json['image'],
-      totalTests: json['totalTests'],
-      freeTests: json['freeTests'],
+      id: (json['_id'] ?? '').toString(),
+      name: (json['name'] ?? '').toString(),
+      image: (json['image'] ?? '').toString(),
+      totalTests: (json['totalTests'] as num?)?.toInt() ?? 0,
+      freeTests: (json['freeTests'] as num?)?.toInt() ?? 0,
     );
   }
 }
@@ -28,7 +28,7 @@ class Banner {
   final String id;
   final String type;
   final String url;
-  final RedirectModel redirectId;
+  final RedirectModel? redirectId;
   final String redirectModel;
 
   Banner({
@@ -40,12 +40,16 @@ class Banner {
   });
 
   factory Banner.fromJson(Map<String, dynamic> json) {
+    final redirectData = json['redirectId'];
+
     return Banner(
-      id: json['_id'],
-      type: json['type'],
-      url: json['url'],
-      redirectId: RedirectModel.fromJson(json['redirectId']),
-      redirectModel: json['redirectModel'],
+      id: (json['_id'] ?? '').toString(),
+      type: (json['type'] ?? '').toString(),
+      url: (json['url'] ?? '').toString(),
+      redirectId: redirectData is Map<String, dynamic>
+          ? RedirectModel.fromJson(redirectData)
+          : null,
+      redirectModel: (json['redirectModel'] ?? '').toString(),
     );
   }
 }

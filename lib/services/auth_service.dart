@@ -53,17 +53,31 @@ class AuthService {
       await prefs.setString('token', token);
 
       final userData = response.data['user'];
+      final examData = userData['exam'];
+      final subExamData = userData['subExam'];
+
+      final examId =
+          examData is Map<String, dynamic> ? (examData['_id'] ?? '') : '';
+      final subExamId = subExamData is Map<String, dynamic>
+          ? (subExamData['_id'] ?? '')
+          : '';
+      final examName =
+          examData is Map<String, dynamic> ? (examData['name'] ?? '') : '';
+      final subExamName = subExamData is Map<String, dynamic>
+          ? (subExamData['name'] ?? '')
+          : '';
+
       final user = User(
         id: userData['id'],
         name: userData['name'],
         email: userData['email'],
         phone: userData['phone'].toString(),
-        examId: userData['exam']['_id'],
-        subExamId: userData['subExam']['_id'],
-        examName: userData['exam']['name'],
-        subExamName: userData['subExam']['name'],
+        examId: examId.toString(),
+        subExamId: subExamId.toString(),
+        examName: examName.toString(),
+        subExamName: subExamName.toString(),
         profilePicture: userData['profilePicture'] ?? '',
-        premium: userData['premium'],
+        premium: userData['premium'] == true || userData['isPremium'] == true,
       );
 
       if (context.mounted) {
@@ -72,7 +86,7 @@ class AuthService {
         // Use a post-frame callback to ensure Flutter framework is ready
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           try {
-            await NotificationService.instance.sendTokenIfNeeded();
+            await NotificationService.instance.sendTokenIfNeeded(context);
           } catch (e) {
             if (kDebugMode) {
               print("Error sending notification token: $e");
@@ -99,7 +113,7 @@ class AuthService {
         name: userData['name'],
         email: userData['email'],
         phone: userData['phone'].toString(),
-        premium: userData['isPremium'],
+        premium: userData['isPremium'] == true || userData['premium'] == true,
       );
 
       if (context.mounted) {

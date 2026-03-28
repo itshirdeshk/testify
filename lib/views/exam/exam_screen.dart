@@ -25,9 +25,18 @@ class _ExamScreenState extends State<ExamScreen> {
   List<SubExam> _subExams = [];
   bool _isLoading = true;
   bool _isUpdating = false;
+  bool _isLoadingMoreExams = false;
+  bool _isLoadingMoreSubExams = false;
+  String? _errorMessage;
   String? _selectedExamId;
   String? _selectedSubExamId;
+  String? _activeSubExamParentId;
   bool _showingSubExams = false;
+  static const int _pageSize = 6;
+  int _examCurrentPage = 1;
+  int _subExamCurrentPage = 1;
+  bool _hasMoreExams = true;
+  bool _hasMoreSubExams = true;
 
   @override
   void initState() {
@@ -39,16 +48,51 @@ class _ExamScreenState extends State<ExamScreen> {
 
   Future<void> _initialize() async {
     await _loadSelectedExam();
-    await _loadExams();
+    await _loadExams(reset: true);
   }
 
-  Future<void> _loadExams() async {
-    final examService = await _examServiceFuture;
-    final exams = await examService.getAllExams();
-    if (mounted) {
+  Future<void> _loadExams({bool reset = false}) async {
+    if (reset) {
+      if (mounted) {
+        setState(() {
+          _isLoading = true;
+          _errorMessage = null;
+          _examCurrentPage = 1;
+          _hasMoreExams = true;
+        });
+      }
+    } else {
+      if (_isLoadingMoreExams || !_hasMoreExams) return;
+      if (mounted) {
+        setState(() {
+          _isLoadingMoreExams = true;
+        });
+      }
+    }
+
+    try {
+      final examService = await _examServiceFuture;
+      final nextPage = reset ? 1 : (_examCurrentPage + 1);
+      final response = await examService.getAllExamsPaginated(
+        page: nextPage,
+        limit: _pageSize,
+      );
+
+      if (!mounted) return;
+
       setState(() {
-        _allExams = exams;
+        _allExams = reset ? response.items : [..._allExams, ...response.items];
+        _examCurrentPage = response.pagination.currentPage;
+        _hasMoreExams = response.pagination.hasNextPage;
         _isLoading = false;
+        _isLoadingMoreExams = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'Unable to load exams right now.';
+        _isLoading = false;
+        _isLoadingMoreExams = false;
       });
     }
   }
@@ -63,19 +107,68 @@ class _ExamScreenState extends State<ExamScreen> {
     }
   }
 
-  Future<void> _loadSubExams(String examId) async {
-    setState(() {
-      _isLoading = true;
-    });
+  Future<void> _loadSubExams(
+    String examId, {
+    bool reset = false,
+  }) async {
+    if (reset) {
+      if (mounted) {
+        setState(() {
+          _isLoading = true;
+          _errorMessage = null;
+          _showingSubExams = true;
+          _activeSubExamParentId = examId;
+          _subExamCurrentPage = 1;
+          _hasMoreSubExams = true;
+          _subExams = [];
+        });
+      }
+    } else {
+      if (_isLoadingMoreSubExams || !_hasMoreSubExams) return;
+      if (mounted) {
+        setState(() {
+          _isLoadingMoreSubExams = true;
+        });
+      }
+    }
 
-    final subExamService = await _subExamServiceFuture;
-    final subExams = await subExamService.getSubExams(examId);
+    try {
+      final subExamService = await _subExamServiceFuture;
+      final nextPage = reset ? 1 : (_subExamCurrentPage + 1);
+      final response = await subExamService.getSubExamsPaginated(
+        examId,
+        page: nextPage,
+        limit: _pageSize,
+      );
 
-    setState(() {
-      _subExams = subExams;
-      _isLoading = false;
-      _showingSubExams = true;
-    });
+      if (!mounted) return;
+
+      setState(() {
+        _subExams = reset ? response.items : [..._subExams, ...response.items];
+        _subExamCurrentPage = response.pagination.currentPage;
+        _hasMoreSubExams = response.pagination.hasNextPage;
+        _isLoading = false;
+        _isLoadingMoreSubExams = false;
+        _showingSubExams = true;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'Unable to load sub-exams right now.';
+        _isLoading = false;
+        _isLoadingMoreSubExams = false;
+      });
+    }
+  }
+
+  Future<void> _loadMoreExams() async {
+    await _loadExams(reset: false);
+  }
+
+  Future<void> _loadMoreSubExams() async {
+    final examId = _activeSubExamParentId;
+    if (examId == null || examId.isEmpty) return;
+    await _loadSubExams(examId, reset: false);
   }
 
   Future<void> _updateUserExam() async {
@@ -238,6 +331,25 @@ class _ExamScreenState extends State<ExamScreen> {
   }
 
   Widget _buildExamList() {
+    if (_errorMessage != null && _allExams.isEmpty && !_showingSubExams) {
+      return _buildErrorState(
+        _errorMessage!,
+        onRetry: () => _loadExams(reset: true),
+      );
+    }
+
+    if (_errorMessage != null && _subExams.isEmpty && _showingSubExams) {
+      return _buildErrorState(
+        _errorMessage!,
+        onRetry: () {
+          final examId = _activeSubExamParentId;
+          if (examId != null && examId.isNotEmpty) {
+            _loadSubExams(examId, reset: true);
+          }
+        },
+      );
+    }
+
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       children: [
@@ -255,7 +367,16 @@ class _ExamScreenState extends State<ExamScreen> {
                     ),
                   ),
                 )
-              : _buildExamGrid(),
+              : Column(
+                  children: [
+                    _buildExamGrid(),
+                    if (_hasMoreExams || _isLoadingMoreExams)
+                      _buildLoadMoreButton(
+                        _loadMoreExams,
+                        isLoading: _isLoadingMoreExams,
+                      ),
+                  ],
+                ),
         ] else ...[
           _subExams.isEmpty
               ? Center(
@@ -270,7 +391,16 @@ class _ExamScreenState extends State<ExamScreen> {
                     ),
                   ),
                 )
-              : _buildSubExamGrid(),
+              : Column(
+                  children: [
+                    _buildSubExamGrid(),
+                    if (_hasMoreSubExams || _isLoadingMoreSubExams)
+                      _buildLoadMoreButton(
+                        _loadMoreSubExams,
+                        isLoading: _isLoadingMoreSubExams,
+                      ),
+                  ],
+                ),
         ],
         if (_showingSubExams && _selectedSubExamId != null)
           Padding(
@@ -303,8 +433,11 @@ class _ExamScreenState extends State<ExamScreen> {
   Widget _buildExamCard(Exam exam, bool isSelected) {
     return InkWell(
       onTap: () {
-        setState(() => _selectedExamId = exam.id);
-        _loadSubExams(exam.id);
+        setState(() {
+          _selectedExamId = exam.id;
+          _selectedSubExamId = null;
+        });
+        _loadSubExams(exam.id, reset: true);
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
@@ -390,6 +523,56 @@ class _ExamScreenState extends State<ExamScreen> {
         final isSelected = _selectedSubExamId == subExam.id;
         return _buildSubExamCard(subExam, isSelected);
       },
+    );
+  }
+
+  Widget _buildLoadMoreButton(
+    Future<void> Function() onPressed, {
+    bool isLoading = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: Center(
+        child: OutlinedButton(
+          onPressed: isLoading ? null : () => onPressed(),
+          child: isLoading
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Load More'),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String message, {required VoidCallback onRetry}) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.color
+                    ?.withValues(alpha: 0.8),
+              ),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: onRetry,
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

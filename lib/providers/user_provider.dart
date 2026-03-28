@@ -6,8 +6,15 @@ import '../models/user.dart';
 
 class UserProvider with ChangeNotifier {
   User? _user;
+  bool _isInitialized = false;
 
   User? get user => _user;
+  bool get isInitialized => _isInitialized;
+  bool get hasCompletedExamSelection {
+    final examId = (_user?.examId ?? '').trim();
+    final subExamId = (_user?.subExamId ?? '').trim();
+    return examId.isNotEmpty && subExamId.isNotEmpty;
+  }
 
   UserProvider() {
     _loadFromPrefs();
@@ -15,12 +22,14 @@ class UserProvider with ChangeNotifier {
 
   Future<void> setUser(User user) async {
     _user = user;
+    _isInitialized = true;
     await _saveToPrefs();
     notifyListeners();
   }
 
   Future<void> clearUser() async {
     _user = null;
+    _isInitialized = true;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('user_data');
     notifyListeners();
@@ -48,21 +57,28 @@ class UserProvider with ChangeNotifier {
   Future<void> _loadFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final userStr = prefs.getString('user_data');
-    if (userStr != null) {
-      final userData = jsonDecode(userStr);
-      _user = User(
-        id: userData['id'],
-        name: userData['name'],
-        email: userData['email'],
-        phone: userData['phone'],
-        profilePicture: userData['profilePicture'],
-        examId: userData['examId'],
-        subExamId: userData['subExamId'],
-        examName: userData['examName'],
-        subExamName: userData['subExamName'],
-        premium: userData['premium'],
-      );
-      notifyListeners();
+    if (userStr != null && userStr.isNotEmpty) {
+      try {
+        final userData = jsonDecode(userStr) as Map<String, dynamic>;
+        _user = User(
+          id: (userData['id'] ?? '').toString(),
+          name: (userData['name'] ?? '').toString(),
+          email: (userData['email'] ?? '').toString(),
+          phone: (userData['phone'] ?? '').toString(),
+          profilePicture: (userData['profilePicture'] ?? '').toString(),
+          examId: (userData['examId'] ?? '').toString(),
+          subExamId: (userData['subExamId'] ?? '').toString(),
+          examName: (userData['examName'] ?? '').toString(),
+          subExamName: (userData['subExamName'] ?? '').toString(),
+          premium: userData['premium'] == true,
+        );
+      } catch (_) {
+        _user = null;
+        await prefs.remove('user_data');
+      }
     }
+
+    _isInitialized = true;
+    notifyListeners();
   }
 }

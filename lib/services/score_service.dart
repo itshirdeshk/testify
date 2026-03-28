@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:testify/models/create_score.dart';
 import 'package:testify/models/leaderboard.dart';
+import 'package:testify/models/paginated_response.dart';
 import 'package:testify/models/score.dart';
 import 'package:testify/utils/custom_dio.dart';
 
@@ -76,14 +77,51 @@ class ScoreService {
     }
   }
 
-  Future<List<Leaderboard>> getLeaderboard(String testId) async {
+  Future<PaginatedResponse<Leaderboard>> getLeaderboardPaginated(
+    String testId, {
+    int page = 1,
+    int limit = 10,
+  }) async {
     try {
-      final response = await _dio.get('/leaderboard/leaderboard/$testId');
+      final response = await _dio.get(
+        '/leaderboard/leaderboard/$testId',
+        queryParameters: {
+          'page': page,
+          'limit': limit,
+        },
+      );
 
       if (response.statusCode == 200) {
-        return (response.data['leaderboard'] as List)
+        final leaderboardJson = response.data['leaderboard'];
+        if (leaderboardJson is! List) {
+          return PaginatedResponse<Leaderboard>(
+            items: const [],
+            pagination: PaginationMeta.fromJson(
+              null,
+              fallbackPage: page,
+              fallbackLimit: limit,
+              fallbackItemCount: 0,
+            ),
+          );
+        }
+
+        final leaderboard = leaderboardJson
+            .whereType<Map<String, dynamic>>()
             .map((e) => Leaderboard.fromJson(e))
             .toList();
+
+        final paginationJson = response.data['pagination'];
+        final pagination = PaginationMeta.fromJson(
+          paginationJson is Map<String, dynamic> ? paginationJson : null,
+          fallbackPage: page,
+          fallbackLimit: limit,
+          fallbackItemCount: leaderboard.length,
+        );
+
+        return PaginatedResponse<Leaderboard>(
+          items: leaderboard,
+          pagination: pagination,
+        );
       }
       throw Exception('Failed to fetch leaderboard');
     } catch (e) {
@@ -92,5 +130,14 @@ class ScoreService {
       }
       throw Exception('Error fetching leaderboard: $e');
     }
+  }
+
+  Future<List<Leaderboard>> getLeaderboard(String testId) async {
+    final paginated = await getLeaderboardPaginated(
+      testId,
+      page: 1,
+      limit: 20,
+    );
+    return paginated.items;
   }
 }

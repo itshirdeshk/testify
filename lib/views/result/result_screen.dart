@@ -36,17 +36,21 @@ class ResultScreenState extends State<ResultScreen>
   bool _isLoading = true;
   bool _isLeaderboardLoading = true;
   Score? _score;
-  List<Leaderboard>? _leaderboard;
+  List<Leaderboard> _leaderboard = [];
   late final ScoreService _scoreService;
+  static const int _leaderboardPageSize = 10;
+  bool _isLoadingMoreLeaderboard = false;
+  bool _hasMoreLeaderboard = true;
+  int _currentLeaderboardPage = 1;
+  String? _leaderboardErrorMessage;
 
   @override
   void initState() {
     super.initState();
-    _tabController = (widget.testId != null &&
-            widget.testId!.isNotEmpty &&
-            widget.questions == null)
-        ? TabController(length: 1, vsync: this)
-        : TabController(length: 3, vsync: this);
+    final showExtraTabs = widget.testId != null &&
+        widget.testId!.isNotEmpty &&
+        widget.questions != null;
+    _tabController = TabController(length: showExtraTabs ? 3 : 1, vsync: this);
     _initService();
   }
 
@@ -62,20 +66,39 @@ class ResultScreenState extends State<ResultScreen>
   }
 
   Future<void> _createOrUpdateScore() async {
+    final testId = widget.testId;
+    final correctAnswers = widget.correctAnswers;
+    final incorrectAnswers = widget.incorrectAnswers;
+    final timeTaken = widget.timeTaken;
+
+    if (testId == null ||
+        testId.isEmpty ||
+        correctAnswers == null ||
+        incorrectAnswers == null ||
+        timeTaken == null) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _isLeaderboardLoading = false;
+        });
+      }
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _isLeaderboardLoading = true;
     });
+
     final CreateScore scoreData = CreateScore(
-        testId: widget.testId!,
-        totalQuestionsAttempted:
-            (widget.correctAnswers! + widget.incorrectAnswers!),
-        totalCorrect: widget.correctAnswers!,
-        totalIncorrect: widget.incorrectAnswers!,
-        timeTaken: widget.timeTaken!);
+        testId: testId,
+        totalQuestionsAttempted: (correctAnswers + incorrectAnswers),
+        totalCorrect: correctAnswers,
+        totalIncorrect: incorrectAnswers,
+        timeTaken: timeTaken);
+
     try {
       final Score score;
-      final List<Leaderboard> leaderboard;
       if (widget.isAttempted == true) {
         score = await _scoreService.updateScore(scoreData);
       } else {
@@ -89,23 +112,97 @@ class ResultScreenState extends State<ResultScreen>
         });
       }
 
-      if (widget.testId != null && widget.testId!.isNotEmpty) {
-        leaderboard = await _scoreService.getLeaderboard(widget.testId!);
-        if (mounted) {
-          setState(() {
-            _leaderboard = leaderboard;
-            _isLeaderboardLoading = false;
-          });
-        }
+      if (testId.isNotEmpty) {
+        await _fetchLeaderboard(reset: true);
+      } else if (mounted) {
+        setState(() {
+          _leaderboard = [];
+          _isLeaderboardLoading = false;
+          _isLoadingMoreLeaderboard = false;
+          _hasMoreLeaderboard = false;
+        });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
+          _leaderboard = [];
           _isLoading = false;
           _isLeaderboardLoading = false;
+          _isLoadingMoreLeaderboard = false;
+          _hasMoreLeaderboard = false;
         });
       }
     }
+  }
+
+  Future<void> _fetchLeaderboard({bool reset = false}) async {
+    final testId = widget.testId;
+
+    if (testId == null || testId.isEmpty) {
+      if (!mounted) return;
+      setState(() {
+        _leaderboard = [];
+        _isLeaderboardLoading = false;
+        _isLoadingMoreLeaderboard = false;
+        _hasMoreLeaderboard = false;
+        _leaderboardErrorMessage = null;
+      });
+      return;
+    }
+
+    if (reset) {
+      if (mounted) {
+        setState(() {
+          _isLeaderboardLoading = true;
+          _leaderboardErrorMessage = null;
+          _currentLeaderboardPage = 1;
+          _hasMoreLeaderboard = true;
+        });
+      }
+    } else {
+      if (_isLoadingMoreLeaderboard || !_hasMoreLeaderboard) return;
+      if (mounted) {
+        setState(() {
+          _isLoadingMoreLeaderboard = true;
+        });
+      }
+    }
+
+    try {
+      final nextPage = reset ? 1 : (_currentLeaderboardPage + 1);
+      final leaderboard = await _scoreService.getLeaderboardPaginated(
+        testId,
+        page: nextPage,
+        limit: _leaderboardPageSize,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _leaderboard = reset
+            ? leaderboard.items
+            : [..._leaderboard, ...leaderboard.items];
+        _currentLeaderboardPage = leaderboard.pagination.currentPage;
+        _hasMoreLeaderboard = leaderboard.pagination.hasNextPage;
+        _isLeaderboardLoading = false;
+        _isLoadingMoreLeaderboard = false;
+        _leaderboardErrorMessage = null;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        if (reset) {
+          _leaderboard = [];
+        }
+        _isLeaderboardLoading = false;
+        _isLoadingMoreLeaderboard = false;
+        _leaderboardErrorMessage = 'Unable to load leaderboard right now.';
+      });
+    }
+  }
+
+  Future<void> _loadMoreLeaderboard() async {
+    await _fetchLeaderboard(reset: false);
   }
 
   Future<void> _fetchScore() async {
@@ -144,7 +241,7 @@ class ResultScreenState extends State<ResultScreen>
         leading: IconButton(
           icon: Icon(Icons.close,
               color: Theme.of(context).textTheme.bodyLarge?.color),
-          onPressed: widget.onClose,
+          onPressed: widget.onClose ?? () => Navigator.pop(context),
         ),
         title: Text(
           'Test Result',
@@ -192,16 +289,23 @@ class ResultScreenState extends State<ResultScreen>
           if (showExtraTabs)
             _isLeaderboardLoading
                 ? const Center(child: CircularProgressIndicator())
-                : _buildLeaderboardTab(_leaderboard!, _score!),
+                : (_score == null
+                    ? _buildInfoState('Result details are not available.')
+                    : _buildLeaderboardTab(_leaderboard, _score!)),
         ],
       ),
     );
   }
 
   Widget _buildAnalysisTab() {
-    if (_isLoading || _score == null) {
+    if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
+
+    if (_score == null) {
+      return _buildInfoState('Unable to load result details.');
+    }
+
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -213,6 +317,25 @@ class ResultScreenState extends State<ResultScreen>
           _buildStatsCard(),
           _buildGeneralInfo(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInfoState(String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.color
+                ?.withValues(alpha: 0.8),
+          ),
+        ),
       ),
     );
   }
@@ -451,11 +574,16 @@ class ResultScreenState extends State<ResultScreen>
   }
 
   Widget _buildSolutionsTab() {
+    final questions = widget.questions ?? const <Question>[];
+    if (questions.isEmpty) {
+      return _buildInfoState('No solutions are available for this attempt.');
+    }
+
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: widget.questions!.length,
+      itemCount: questions.length,
       itemBuilder: (context, index) {
-        final question = widget.questions![index];
+        final question = questions[index];
         return Card(
           elevation: 2,
           color: Theme.of(context).cardColor,
@@ -643,24 +771,24 @@ class ResultScreenState extends State<ResultScreen>
               second.rank,
               second.user.name,
               second.user.profilePicture,
-              double.parse(second.score.totalMarksObtained.toString()),
-              double.parse(second.score.totalMarks.toString()),
+              second.score.totalMarksObtained.toDouble(),
+              second.score.totalMarks.toDouble(),
             ),
           if (first != null)
             _buildTopUser(
               first.rank,
               first.user.name,
               first.user.profilePicture,
-              double.parse(first.score.totalMarksObtained.toString()),
-              double.parse(first.score.totalMarks.toString()),
+              first.score.totalMarksObtained.toDouble(),
+              first.score.totalMarks.toDouble(),
             ),
           if (third != null)
             _buildTopUser(
               third.rank,
               third.user.name,
               third.user.profilePicture,
-              double.parse(third.score.totalMarksObtained.toString()),
-              double.parse(third.score.totalMarks.toString()),
+              third.score.totalMarksObtained.toDouble(),
+              third.score.totalMarks.toDouble(),
             ),
         ],
       ),
@@ -672,7 +800,10 @@ class ResultScreenState extends State<ResultScreen>
     final double height = position == 1 ? 120 : 100;
     final bool isFirst = position == 1;
 
-    final firstName = name.split(' ').first;
+    final sanitizedName = name.trim();
+    final firstName = sanitizedName.isEmpty
+      ? 'N/A'
+      : sanitizedName.split(RegExp(r'\s+')).first;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -688,7 +819,7 @@ class ResultScreenState extends State<ResultScreen>
               ],
             ),
           ),
-          child: profilePicure == null
+            child: profilePicure == null || profilePicure.trim().isEmpty
               ? CircleAvatar(
                   radius: isFirst ? 30 : 25,
                   backgroundColor: Colors.white,
@@ -756,66 +887,123 @@ class ResultScreenState extends State<ResultScreen>
   }
 
   Widget _buildLeaderboardList(List<Leaderboard> leaderboard) {
-    return leaderboard.length < 4
-        ? Center(
+    final remainingParticipants = leaderboard.skip(3).toList();
+    final shouldShowLoadMore = _hasMoreLeaderboard || _isLoadingMoreLeaderboard;
+
+    if (remainingParticipants.isEmpty && !shouldShowLoadMore) {
+      if (_leaderboardErrorMessage != null) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _leaderboardErrorMessage!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.color
+                        ?.withValues(alpha: 0.8),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton(
+                  onPressed: () => _fetchLeaderboard(reset: true),
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      return Center(
+        child: Text(
+          'No participants found.',
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyLarge?.color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      itemCount: remainingParticipants.length + (shouldShowLoadMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index >= remainingParticipants.length) {
+          if (_isLoadingMoreLeaderboard) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Center(
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            );
+          }
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Center(
+              child: OutlinedButton(
+                onPressed: _hasMoreLeaderboard ? _loadMoreLeaderboard : null,
+                child: const Text('Load More'),
+              ),
+            ),
+          );
+        }
+
+        final participant = remainingParticipants[index];
+        return ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+          leading: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                '${participant.rank}',
+                style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          title: Text(
+            participant.user.name,
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).textTheme.bodyLarge?.color,
+            ),
+          ),
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
             child: Text(
-              'No more participants.',
+              '${participant.score.totalMarksObtained}/${participant.score.totalMarks}',
               style: TextStyle(
-                color: Theme.of(context).textTheme.bodyLarge?.color,
+                color: Theme.of(context).primaryColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
-          )
-        : ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: leaderboard.length > 3 ? leaderboard.length - 3 : 0,
-            itemBuilder: (context, index) {
-              return ListTile(
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${leaderboard[index + 3].rank}',
-                      style: TextStyle(
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                title: Text(
-                  leaderboard[index + 3].user.name,
-                  style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).textTheme.bodyLarge?.color),
-                ),
-                trailing: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${leaderboard[index + 3].score.totalMarksObtained}/${leaderboard[index + 3].score.totalMarks}',
-                    style: TextStyle(
-                      color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildUserRank(Score score) {
@@ -945,9 +1133,10 @@ class ResultScreenState extends State<ResultScreen>
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label,
-            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w500,
-                )),
+                ) ??
+                const TextStyle(fontWeight: FontWeight.w500)),
         Text(value,
             style: TextStyle(
               color: Theme.of(context).primaryColor,
@@ -958,6 +1147,11 @@ class ResultScreenState extends State<ResultScreen>
   }
 
   Widget _buildGeneralInfo() {
+    final unattemptedCount = ((widget.totalQuestions ?? 0) -
+            (widget.correctAnswers ?? 0) -
+            (widget.incorrectAnswers ?? 0))
+        .clamp(0, 1 << 30);
+
     return Card(
       elevation: 2,
       color: Theme.of(context).cardColor,
@@ -1019,10 +1213,7 @@ class ResultScreenState extends State<ResultScreen>
                     Icons.radio_button_unchecked,
                     Colors.orange,
                     'Unattempted',
-                    (widget.totalQuestions! -
-                            widget.correctAnswers! -
-                            widget.incorrectAnswers!)
-                        .toString(),
+                    unattemptedCount.toString(),
                     Theme.of(context).cardColor,
                   ),
               ],

@@ -11,9 +11,9 @@ class Option {
 
   factory Option.fromJson(Map<String, dynamic> json) {
     return Option(
-      id: json['_id'],
-      text: json['text'],
-      isCorrect: json['isCorrect'],
+      id: (json['_id'] ?? '').toString(),
+      text: (json['text'] ?? '').toString(),
+      isCorrect: json['isCorrect'] == true,
     );
   }
 }
@@ -38,20 +38,27 @@ class Question {
   });
 
   factory Question.fromJson(Map<String, dynamic> json) {
+    final rawOptions = json['options'];
+    final optionList = rawOptions is List ? rawOptions : const <dynamic>[];
+
     return Question(
-      id: json['_id'],
-      title: json['title'],
-      options: (json['options'] as List)
+      id: (json['_id'] ?? '').toString(),
+      title: (json['title'] ?? '').toString(),
+      options: optionList
+          .whereType<Map<String, dynamic>>()
           .map((option) => Option.fromJson(option))
           .toList(),
-      positiveMarks: json['positiveMarks'].toDouble(),
-      negativeMarks: json['negativeMarks'].toDouble(),
-      test: json['test'],
+      positiveMarks: (json['positiveMarks'] as num?)?.toDouble() ?? 0,
+      negativeMarks: (json['negativeMarks'] as num?)?.toDouble() ?? 0,
+      test: (json['test'] ?? '').toString(),
     );
   }
 
   bool get isCorrect {
     if (selectedOption == null) return false;
+    if (selectedOption! < 0 || selectedOption! >= options.length) {
+      return false;
+    }
     return options[selectedOption!].isCorrect;
   }
 }

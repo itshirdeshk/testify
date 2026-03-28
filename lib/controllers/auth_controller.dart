@@ -18,6 +18,12 @@ class AuthController {
   final List<TextEditingController> otpControllers =
       List.generate(6, (index) => TextEditingController());
 
+  bool _hasCompletedExamSelection(UserProvider userProvider) {
+    final examId = (userProvider.user?.examId ?? '').trim();
+    final subExamId = (userProvider.user?.subExamId ?? '').trim();
+    return examId.isNotEmpty && subExamId.isNotEmpty;
+  }
+
   Future<bool> login(BuildContext context) async {
     final AuthService authService = AuthService();
     try {
@@ -34,10 +40,10 @@ class AuthController {
         if (response.data['user']['isUserVerified'] == true) {
           final userProvider =
               Provider.of<UserProvider>(context, listen: false);
-          final examId = userProvider.user?.examId;
+          final hasCompletedSelection =
+              _hasCompletedExamSelection(userProvider);
 
-          // Navigate based on examId
-          if (examId == '') {
+          if (!hasCompletedSelection) {
             Navigator.pushNamed(
               context,
               '/exam',
@@ -59,9 +65,13 @@ class AuthController {
         }
       } else {
         if (context.mounted) {
+          final message = response.data is Map<String, dynamic>
+              ? (response.data['message'] ?? 'Login failed').toString()
+              : 'Login failed';
+
           CustomToast.show(
             context: context,
-            message: response.data['message'],
+            message: message,
             isError: true,
           );
         }
@@ -97,9 +107,13 @@ class AuthController {
         return true;
       } else {
         if (context.mounted) {
+          final message = response.data is Map<String, dynamic>
+              ? (response.data['message'] ?? 'Registration failed').toString()
+              : 'Registration failed';
+
           CustomToast.show(
             context: context,
-            message: response.data['message'],
+            message: message,
             isError: true,
           );
         }
@@ -135,10 +149,8 @@ class AuthController {
 
         // Check examId from user provider
         final userProvider = Provider.of<UserProvider>(context, listen: false);
-        final examId = userProvider.user?.examId;
 
-        // Navigate based on examId
-        if (examId == '') {
+        if (!_hasCompletedExamSelection(userProvider)) {
           Navigator.pushNamed(
             context,
             '/exam',
@@ -153,9 +165,13 @@ class AuthController {
         return true;
       }
       if (context.mounted) {
+        final message = response.data is Map<String, dynamic>
+            ? (response.data['message'] ?? 'OTP verification failed').toString()
+            : 'OTP verification failed';
+
         CustomToast.show(
           context: context,
-          message: response.data['message'],
+          message: message,
           isError: true,
         );
       }

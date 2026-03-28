@@ -26,8 +26,12 @@ class TestSeriesDetailScreen extends StatefulWidget {
 class TestSeriesDetailScreenState extends State<TestSeriesDetailScreen> {
   int _selectedIndex = 0;
   bool _isLoading = false;
+  bool _isLoadingMore = false;
   List<MockTest> _mockTests = [];
   late final MockTestService _mockTestService;
+  static const int _pageSize = 10;
+  int _currentPage = 1;
+  bool _hasMoreMockTests = true;
 
   @override
   void initState() {
@@ -37,22 +41,51 @@ class TestSeriesDetailScreenState extends State<TestSeriesDetailScreen> {
 
   Future<void> _initService() async {
     _mockTestService = await MockTestService.create(context);
-    _fetchMockTests();
+    await _fetchMockTests(reset: true);
   }
 
-  Future<void> _fetchMockTests() async {
-    setState(() => _isLoading = true);
-    try {
-      final mockTests = await _mockTestService.getMockTests(widget.id);
+  Future<void> _fetchMockTests({bool reset = false}) async {
+    if (reset) {
       if (mounted) {
         setState(() {
-          _mockTests = mockTests;
+          _isLoading = true;
+          _currentPage = 1;
+          _hasMoreMockTests = true;
+        });
+      }
+    } else {
+      if (_isLoadingMore || !_hasMoreMockTests) return;
+      if (mounted) {
+        setState(() {
+          _isLoadingMore = true;
+        });
+      }
+    }
+
+    try {
+      final nextPage = reset ? 1 : (_currentPage + 1);
+      final response = await _mockTestService.getMockTestsPaginated(
+        widget.id,
+        page: nextPage,
+        limit: _pageSize,
+      );
+
+      if (mounted) {
+        setState(() {
+          _mockTests =
+              reset ? response.items : [..._mockTests, ...response.items];
+          _currentPage = response.pagination.currentPage;
+          _hasMoreMockTests = response.pagination.hasNextPage;
           _isLoading = false;
+          _isLoadingMore = false;
         });
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+          _isLoadingMore = false;
+        });
       }
     }
   }
@@ -262,8 +295,34 @@ class TestSeriesDetailScreenState extends State<TestSeriesDetailScreen> {
           )
         : ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: _mockTests.length,
+            itemCount: _mockTests.length + ((_hasMoreMockTests || _isLoadingMore) ? 1 : 0),
             itemBuilder: (context, index) {
+              if (index >= _mockTests.length) {
+                if (_isLoadingMore) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: Center(
+                      child: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                  );
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Center(
+                    child: OutlinedButton(
+                      onPressed:
+                          _hasMoreMockTests ? () => _fetchMockTests(reset: false) : null,
+                      child: const Text('Load More'),
+                    ),
+                  ),
+                );
+              }
+
               final mockTest = _mockTests[index];
               return Card(
                 color: Theme.of(context).cardColor,

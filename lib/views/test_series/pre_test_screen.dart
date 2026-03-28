@@ -56,11 +56,14 @@ class PreTestScreenState extends State<PreTestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final unattemptedTests = _testResponse.unattemptedTests ?? const <Test>[];
+    final attemptedTests = _testResponse.attemptedTests ?? const <Test>[];
+
     final freeTests =
-        _testResponse.unattemptedTests!.where((test) => test.isFree).toList();
+      unattemptedTests.where((test) => test.isFree).toList();
     final premiumTests =
-        _testResponse.unattemptedTests!.where((test) => !test.isFree).toList();
-    final previouslyAttemptedTests = _testResponse.attemptedTests!;
+      unattemptedTests.where((test) => !test.isFree).toList();
+    final previouslyAttemptedTests = attemptedTests;
 
 
     final userProvider = Provider.of<UserProvider>(context, listen: false);

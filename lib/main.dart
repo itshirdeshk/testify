@@ -9,7 +9,6 @@ import 'views/faq/faq_screen.dart';
 import 'views/about_us/about_us_screen.dart';
 import 'views/privacy_policy/privacy_policy_screen.dart';
 import 'views/terms/terms_screen.dart';
-import 'custom/widgets/base_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:testify/services/notification_service.dart';
@@ -50,7 +49,6 @@ class MyApp extends StatelessWidget {
           initialRoute: '/splash_screen',
           onGenerateRoute: AppRoutes.generateRoute,
           debugShowCheckedModeBanner: false,
-          home: const BaseScreen(),
           routes: {
             '/faq': (context) => const FAQScreen(),
             '/about-us': (context) => const AboutUsScreen(),

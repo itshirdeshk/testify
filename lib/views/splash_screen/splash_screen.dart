@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -55,14 +57,48 @@ class _SplashScreenState extends State<SplashScreen>
 
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
+    final userDataJson = prefs.getString('user_data');
+
+    final hasValidToken = token != null && token.trim().isNotEmpty;
+    final hasCompletedSelection = _hasCompletedSelection(userDataJson);
+
+    String nextRoute = '/login';
+
+    if (hasValidToken && hasCompletedSelection) {
+      nextRoute = '/base_screen';
+    } else if (hasValidToken) {
+      // Incomplete persisted session can break onboarding flow.
+      await prefs.remove('token');
+      await prefs.remove('user_data');
+    }
 
     if (!mounted) return;
 
     Navigator.pushNamedAndRemoveUntil(
       context,
-      token != null ? '/base_screen' : '/login',
+      nextRoute,
       (route) => false,
     );
+  }
+
+  bool _hasCompletedSelection(String? userDataJson) {
+    if (userDataJson == null || userDataJson.trim().isEmpty) {
+      return false;
+    }
+
+    try {
+      final decoded = jsonDecode(userDataJson);
+      if (decoded is! Map<String, dynamic>) {
+        return false;
+      }
+
+      final examId = (decoded['examId'] ?? '').toString().trim();
+      final subExamId = (decoded['subExamId'] ?? '').toString().trim();
+
+      return examId.isNotEmpty && subExamId.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
   }
 
   @override
